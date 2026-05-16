@@ -1,0 +1,587 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  ── Feil Brand Tokens ──────────────────────────────────  -->
+    <Styles.Resources>
+        <ResourceDictionary>
+            <!--  Semantic colours  -->
+            <Color x:Key="FeilAccent">#5B97F8</Color>
+            <Color x:Key="FeilAccentDim">#3A72D4</Color>
+            <Color x:Key="FeilAccentBright">#7AB3FF</Color>
+            <Color x:Key="FeilSuccess">#3DD68C</Color>
+            <Color x:Key="FeilWarning">#F5A623</Color>
+            <Color x:Key="FeilDanger">#E05252</Color>
+            <Color x:Key="FeilCancelled">#8A8A9A</Color>
+
+            <SolidColorBrush x:Key="FeilAccentBrush" Color="{StaticResource FeilAccent}" />
+            <SolidColorBrush x:Key="FeilAccentDimBrush" Color="{StaticResource FeilAccentDim}" />
+            <SolidColorBrush x:Key="FeilAccentBrightBrush" Color="{StaticResource FeilAccentBright}" />
+            <SolidColorBrush x:Key="FeilSuccessBrush" Color="{StaticResource FeilSuccess}" />
+            <SolidColorBrush x:Key="FeilWarningBrush" Color="{StaticResource FeilWarning}" />
+            <SolidColorBrush x:Key="FeilDangerBrush" Color="{StaticResource FeilDanger}" />
+            <SolidColorBrush x:Key="FeilCancelledBrush" Color="{StaticResource FeilCancelled}" />
+
+            <!--  Surface / border  -->
+            <SolidColorBrush x:Key="FeilSurface" Color="#12141F" />
+            <SolidColorBrush x:Key="FeilSurfaceRaised" Color="#1C1F30" />
+            <SolidColorBrush x:Key="FeilSurfaceElevated" Color="#222538" />
+            <SolidColorBrush x:Key="FeilSurfaceHover" Color="#252840" />
+            <SolidColorBrush x:Key="FeilBorder" Color="#252A3D" />
+            <SolidColorBrush x:Key="FeilBorderDim" Color="#343B58" />
+
+            <!--  Text hierarchy  -->
+            <SolidColorBrush x:Key="FeilTextPrimary" Color="#EDF1FC" />
+            <SolidColorBrush x:Key="FeilTextSecondary" Color="#7E8FA8" />
+            <SolidColorBrush x:Key="FeilTextMuted" Color="#414D66" />
+
+            <!--  Interactive  -->
+            <SolidColorBrush x:Key="FeilDangerHover" Color="#33E05252" />
+            <SolidColorBrush x:Key="FeilDangerSubtle" Color="#1AE05252" />
+            <SolidColorBrush x:Key="FeilGhostHoverBg" Color="#1A5B97F8" />
+            <SolidColorBrush x:Key="FeilAccentSubtle" Color="#0F5B97F8" />
+
+            <!--  Drop zone active  -->
+            <SolidColorBrush x:Key="FeilDropZoneActiveBorder" Color="#5B97F8" />
+            <SolidColorBrush x:Key="FeilDropZoneActiveBg" Color="#0D5B97F8" />
+
+            <!--  ── Gradient Brushes ──────────────────────────────────  -->
+            <!--  Horizontal accent gradient (for strips, progress fill, etc.)  -->
+            <LinearGradientBrush x:Key="FeilAccentGradient" StartPoint="0%,0%" EndPoint="100%,0%">
+                <GradientStop Offset="0" Color="#7AB3FF" />
+                <GradientStop Offset="0.5" Color="#5B97F8" />
+                <GradientStop Offset="1" Color="#3A72D4" />
+            </LinearGradientBrush>
+
+            <!--  Vertical accent gradient (for sidebar top glow, hero card top strip)  -->
+            <LinearGradientBrush x:Key="FeilAccentGradientVertical" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="#7AB3FF" />
+                <GradientStop Offset="1" Color="#5B97F8" />
+            </LinearGradientBrush>
+
+            <!--  Diagonal hero card background gradient  -->
+            <LinearGradientBrush x:Key="FeilHeroGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Offset="0" Color="#1E2A44" />
+                <GradientStop Offset="0.6" Color="#1C1F30" />
+                <GradientStop Offset="1" Color="#12141F" />
+            </LinearGradientBrush>
+
+            <!--  Sidebar top ambient glow gradient  -->
+            <LinearGradientBrush x:Key="FeilSidebarTopGlow" StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Offset="0" Color="#0E1929" />
+                <GradientStop Offset="1" Color="#00000000" />
+            </LinearGradientBrush>
+
+            <!--  Success gradient for done/complete accents  -->
+            <LinearGradientBrush x:Key="FeilSuccessGradient" StartPoint="0%,0%" EndPoint="100%,0%">
+                <GradientStop Offset="0" Color="#3DD68C" />
+                <GradientStop Offset="1" Color="#28A86E" />
+            </LinearGradientBrush>
+        </ResourceDictionary>
+    </Styles.Resources>
+
+    <!--
+        ═══════════════════════════════════════════════════════════
+        BUTTONS
+        ═══════════════════════════════════════════════════════════
+    -->
+
+    <!--  ── Accent (primary action) ────────────────────────────  -->
+    <Style Selector="Button.feil-accent">
+        <Setter Property="Background" Value="{StaticResource FeilAccentGradient}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="16,9" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.feil-accent /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BoxShadow" Value="0 2 12 0 #445B97F8" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.feil-accent:pointerover">
+        <Setter Property="RenderTransform" Value="scale(1.02)" />
+    </Style>
+    <Style Selector="Button.feil-accent:pointerover /template/ ContentPresenter">
+        <Setter Property="BoxShadow" Value="0 4 20 0 #665B97F8" />
+    </Style>
+    <Style Selector="Button.feil-accent:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+    <Style Selector="Button.feil-accent:pressed /template/ ContentPresenter">
+        <Setter Property="BoxShadow" Value="0 1 8 0 #335B97F8" />
+    </Style>
+
+    <!--  ── Danger / destructive ghost ─────────────────────────  -->
+    <Style Selector="Button.feil-danger">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource FeilDangerBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource FeilDangerBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="12,7" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.feil-danger /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="{StaticResource FeilDangerBrush}" />
+    </Style>
+    <Style Selector="Button.feil-danger:pointerover">
+        <Setter Property="Background" Value="{StaticResource FeilDangerHover}" />
+        <Setter Property="RenderTransform" Value="scale(1.01)" />
+    </Style>
+    <Style Selector="Button.feil-danger:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+
+    <!--  ── Ghost neutral ───────────────────────────────────────  -->
+    <Style Selector="Button.feil-ghost">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource FeilTextSecondary}" />
+        <Setter Property="BorderBrush" Value="{StaticResource FeilBorderDim}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="12,7" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.feil-ghost /template/ ContentPresenter">
+        <Setter Property="Foreground" Value="{StaticResource FeilTextSecondary}" />
+    </Style>
+    <Style Selector="Button.feil-ghost:pointerover">
+        <Setter Property="Background" Value="{StaticResource FeilGhostHoverBg}" />
+        <Setter Property="BorderBrush" Value="{StaticResource FeilAccentBrush}" />
+        <Setter Property="RenderTransform" Value="scale(1.01)" />
+    </Style>
+    <Style Selector="Button.feil-ghost:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.98)" />
+    </Style>
+
+    <!--  ── Icon-only ───────────────────────────────────────────  -->
+    <Style Selector="Button.feil-icon">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="7" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.12" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.08" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.feil-icon:pointerover">
+        <Setter Property="Background" Value="#18FFFFFF" />
+        <Setter Property="RenderTransform" Value="scale(1.05)" />
+    </Style>
+    <Style Selector="Button.feil-icon:pressed">
+        <Setter Property="Background" Value="#28FFFFFF" />
+        <Setter Property="RenderTransform" Value="scale(0.95)" />
+    </Style>
+
+    <!--
+        ═══════════════════════════════════════════════════════════
+        PROGRESS BARS
+        ═══════════════════════════════════════════════════════════
+    -->
+    <Style Selector="ProgressBar.feil-progress">
+        <Setter Property="Height" Value="6" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Foreground" Value="{StaticResource FeilAccentGradient}" />
+        <Setter Property="Background" Value="#1A5B97F8" />
+    </Style>
+    <Style Selector="ProgressBar.feil-progress-success">
+        <Setter Property="Height" Value="6" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Foreground" Value="{StaticResource FeilSuccessGradient}" />
+        <Setter Property="Background" Value="#1A3DD68C" />
+    </Style>
+
+    <!--
+        ═══════════════════════════════════════════════════════════
+        CARDS
+        ═══════════════════════════════════════════════════════════
+    -->
+
+    <!--  Standard card  -->
+    <Style Selector="Border.feil-card">
+        <Setter Property="Background" Value="{StaticResource FeilSurfaceRaised}" />
+        <Setter Property="BorderBrush" Value="{StaticResource FeilBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="BoxShadow" Value="0 2 16 0 #1A000000" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
+                <BrushTransition Property="Background" Duration="0:0:0.18" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.feil-card:pointerover">
+        <Setter Property="BorderBrush" Value="{StaticResource FeilBorderDim}" />
+        <Setter Property="Background" Value="{StaticResource FeilSurfaceHover}" />
+        <Setter Property="BoxShadow" Value="0 4 24 0 #22000000" />
+    </Style>
+
+    <!--  Hero / active card — accent glow border  -->
+    <Style Selector="Border.feil-card-hero">
+        <Setter Property="Background" Value="{StaticResource FeilHeroGradient}" />
+        <Setter Property="BorderBrush" Value="{StaticResource FeilAccentBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="BoxShadow" Value="0 0 40 0 #2A5B97F8, 0 6 32 0 #2A000000" />
+    </Style>
+
+    <!--
+        ═══════════════════════════════════════════════════════════
+        STATUS BADGES
+        ═══════════════════════════════════════════════════════════
+    -->
+    <Style Selector="Border.badge-success">
+        <Setter Property="Background" Value="#1A3DD68C" />
+        <Setter Property="BorderBrush" Value="#2A3DD68C" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="8,3" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.badge-failed">
+        <Setter Property="Background" Value="#1AE05252" />
+        <Setter Property="BorderBrush" Value="#2AE05252" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="8,3" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.badge-cancelled">
+        <Setter Property="Background" Value="#1A8A8A9A" />
+        <Setter Property="BorderBrush" Value="#2A8A8A9A" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="8,3" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.badge-queued">
+        <Setter Property="Background" Value="#1A5B97F8" />
+        <Setter Property="BorderBrush" Value="#2A5B97F8" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="8,3" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.badge-paused">
+        <Setter Property="Background" Value="#1AF5A623" />
+        <Setter Property="BorderBrush" Value="#2AF5A623" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="8,3" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!--  Shared TextBlock inside every badge  -->
+    <Style Selector="Border.badge-success TextBlock,                      Border.badge-failed TextBlock,                      Border.badge-cancelled TextBlock,                      Border.badge-queued TextBlock,                      Border.badge-paused TextBlock">
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LetterSpacing" Value="0.8" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!--
+        ═══════════════════════════════════════════════════════════
+        DROP ZONE
+        ═══════════════════════════════════════════════════════════
+    -->
+    <Style Selector="Border.feil-drop-zone">
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="32" />
+        <Setter Property="BorderThickness" Value="1.5" />
+        <Setter Property="BorderBrush" Value="{StaticResource FeilBorderDim}" />
+        <Setter Property="Background" Value="{StaticResource FeilSurface}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.2" />
+                <BrushTransition Property="Background" Duration="0:0:0.2" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.feil-drop-zone:pointerover">
+        <Setter Property="BorderBrush" Value="{StaticResource FeilDropZoneActiveBorder}" />
+        <Setter Property="Background" Value="{StaticResource FeilDropZoneActiveBg}" />
+        <Setter Property="BoxShadow" Value="inset 0 0 0 1 #335B97F8" />
+    </Style>
+    <Style Selector="Border.feil-drop-zone.drag-over">
+        <Setter Property="BorderBrush" Value="{StaticResource FeilDropZoneActiveBorder}" />
+        <Setter Property="Background" Value="{StaticResource FeilDropZoneActiveBg}" />
+        <Setter Property="BoxShadow" Value="inset 0 0 0 1 #335B97F8" />
+    </Style>
+
+    <!--
+        ═══════════════════════════════════════════════════════════
+        STAT CARDS
+        ═══════════════════════════════════════════════════════════
+    -->
+    <Style Selector="Border.feil-stat">
+        <Setter Property="Background" Value="{StaticResource FeilSurface}" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16,14" />
+        <Setter Property="BorderBrush" Value="{StaticResource FeilBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Border.feil-stat:pointerover">
+        <Setter Property="BorderBrush" Value="{StaticResource FeilBorderDim}" />
+        <Setter Property="Background" Value="{StaticResource FeilSurfaceRaised}" />
+    </Style>
+
+    <!--
+        ═══════════════════════════════════════════════════════════
+        SECTION ICON CONTAINER
+        A small rounded square that wraps a PathIcon to give it
+        a tinted accent background — used in settings section headers.
+        ═══════════════════════════════════════════════════════════
+    -->
+    <Style Selector="Border.section-icon">
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Background" Value="#1A5B97F8" />
+        <Setter Property="BorderBrush" Value="#255B97F8" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    <Style Selector="Border.section-icon PathIcon">
+        <Setter Property="Foreground" Value="{StaticResource FeilAccentBrush}" />
+    </Style>
+
+    <!--
+        ═══════════════════════════════════════════════════════════
+        UTILITIES
+        ═══════════════════════════════════════════════════════════
+    -->
+    <Style Selector="Separator.feil-divider">
+        <Setter Property="Background" Value="{StaticResource FeilBorder}" />
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Margin" Value="0,4" />
+    </Style>
+
+    <!--
+        ═══════════════════════════════════════════════════════════
+        SIDEBAR NAV ITEM BUTTONS  (Downloads / History / SLSsteam)
+        ═══════════════════════════════════════════════════════════
+    -->
+    <Style Selector="Button.sidebar-nav-item">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.12" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.sidebar-nav-item /template/ ContentPresenter">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-item:pointerover">
+        <Setter Property="Background" Value="{StaticResource FeilGhostHoverBg}" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-item.sidebar-nav-selected">
+        <Setter Property="Background" Value="#1A5B97F8" />
+    </Style>
+    <!--  Icon colour  -->
+    <Style Selector="Button.sidebar-nav-item PathIcon">
+        <Setter Property="Foreground" Value="{StaticResource FeilTextSecondary}" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-item:pointerover PathIcon">
+        <Setter Property="Foreground" Value="{StaticResource FeilAccentBrush}" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-item.sidebar-nav-selected PathIcon">
+        <Setter Property="Foreground" Value="{StaticResource FeilAccentBrush}" />
+    </Style>
+    <!--  Label colour — white (primary), not gray  -->
+    <Style Selector="Button.sidebar-nav-item TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource FeilTextPrimary}" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-item.sidebar-nav-selected TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource FeilAccentBrush}" />
+    </Style>
+
+    <!--
+        ═══════════════════════════════════════════════════════════
+        SIDEBAR NAV PIN BUTTON
+        ═══════════════════════════════════════════════════════════
+    -->
+    <Style Selector="Button.sidebar-nav-pin">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.12" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.sidebar-nav-pin /template/ ContentPresenter">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-pin:pointerover">
+        <Setter Property="Background" Value="{StaticResource FeilGhostHoverBg}" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-pin.sidebar-nav-selected">
+        <Setter Property="Background" Value="#1A5B97F8" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-pin PathIcon">
+        <Setter Property="Foreground" Value="{StaticResource FeilTextSecondary}" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-pin:pointerover PathIcon">
+        <Setter Property="Foreground" Value="{StaticResource FeilAccentBrush}" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-pin.sidebar-nav-selected PathIcon">
+        <Setter Property="Foreground" Value="{StaticResource FeilAccentBrush}" />
+    </Style>
+
+    <!--  Sidebar nav label text (used by both NavMenu items and the pin button)  -->
+    <Style Selector="TextBlock.sidebar-nav-label">
+        <Setter Property="Foreground" Value="{StaticResource FeilTextSecondary}" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-pin:pointerover TextBlock.sidebar-nav-label">
+        <Setter Property="Foreground" Value="{StaticResource FeilTextPrimary}" />
+    </Style>
+    <Style Selector="Button.sidebar-nav-pin.sidebar-nav-selected TextBlock.sidebar-nav-label">
+        <Setter Property="Foreground" Value="{StaticResource FeilTextPrimary}" />
+    </Style>
+
+    <!--  Section header label (NETWORK, DISK WRITE, etc.)  -->
+    <Style Selector="TextBlock.section-header">
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource FeilTextMuted}" />
+        <Setter Property="LetterSpacing" Value="1.4" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+    <!--  Page-level title  -->
+    <Style Selector="TextBlock.page-title">
+        <Setter Property="FontSize" Value="26" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource FeilTextPrimary}" />
+    </Style>
+
+    <!--  Page-level subtitle  -->
+    <Style Selector="TextBlock.page-subtitle">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource FeilTextSecondary}" />
+    </Style>
+
+    <!--  Stat value (large number inside a feil-stat card)  -->
+    <Style Selector="TextBlock.stat-value">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource FeilTextPrimary}" />
+    </Style>
+
+    <!--  Live pulse dot  -->
+    <Style Selector="Ellipse.feil-pulse">
+        <Setter Property="Width" Value="7" />
+        <Setter Property="Height" Value="7" />
+        <Setter Property="Fill" Value="{StaticResource FeilSuccessBrush}" />
+    </Style>
+
+    <!--  Game icon thumbnail  -->
+    <Style Selector="Border.game-icon">
+        <Setter Property="Background" Value="{StaticResource FeilSurface}" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="BorderBrush" Value="{StaticResource FeilBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!--
+        ═══════════════════════════════════════════════════════════
+        MENUS AND FLYOUTS
+        ═══════════════════════════════════════════════════════════
+    -->
+    <Style Selector="MenuFlyoutPresenter">
+        <Setter Property="Background" Value="{StaticResource FeilSurfaceElevated}" />
+        <Setter Property="BorderBrush" Value="{StaticResource FeilBorderDim}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="6" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="MenuFlyoutPresenter /template/ Border">
+        <Setter Property="BoxShadow" Value="0 8 32 0 #44000000" />
+    </Style>
+
+    <Style Selector="MenuItem">
+        <Setter Property="Foreground" Value="{StaticResource FeilTextSecondary}" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Margin" Value="0,1" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Foreground" Duration="0:0:0.1" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="MenuItem:pointerover /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{StaticResource FeilSurfaceHover}" />
+    </Style>
+    <Style Selector="MenuItem:selected /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{StaticResource FeilSurfaceHover}" />
+    </Style>
+    <Style Selector="MenuItem:pointerover">
+        <Setter Property="Foreground" Value="{StaticResource FeilTextPrimary}" />
+    </Style>
+    <Style Selector="MenuItem:selected">
+        <Setter Property="Foreground" Value="{StaticResource FeilTextPrimary}" />
+    </Style>
+    <Style Selector="MenuItem &gt; PathIcon">
+        <Setter Property="Foreground" Value="{StaticResource FeilTextMuted}" />
+        <Setter Property="Margin" Value="0,0,10,0" />
+    </Style>
+    <Style Selector="MenuItem:pointerover &gt; PathIcon">
+        <Setter Property="Foreground" Value="{StaticResource FeilAccentBrush}" />
+    </Style>
+
+</Styles>

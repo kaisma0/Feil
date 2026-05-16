@@ -1,0 +1,87 @@
+# ----------------------------------------------------------------------
+# Visual Studio / IDEs
+# ----------------------------------------------------------------------
+.vs/
+.vsctcc
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.rsuser
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# ----------------------------------------------------------------------
+# Build results
+# ----------------------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+[Dd]ebug/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]uild/
+TestResults/
+AppPackages/
+BundleArtifacts/
+
+# ----------------------------------------------------------------------
+# NuGet Packages
+# ----------------------------------------------------------------------
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+# ----------------------------------------------------------------------
+# OS / Environment generated files
+# ----------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Linux
+*~
+
+# ----------------------------------------------------------------------
+# Crash Reports / Logs
+# ----------------------------------------------------------------------
+mono_crash.*
+*.log
+
+# ----------------------------------------------------------------------
+# Publishing / Deployment
+# ----------------------------------------------------------------------
+*.publishsettings
+*.[Pp]ubxml
+*.[Pp]ubxml.user

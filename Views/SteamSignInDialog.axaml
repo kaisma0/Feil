@@ -1,0 +1,292 @@
+<UserControl
+    x:Class="Feil.Views.SteamSignInDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:vm="using:Feil.ViewModels"
+    Width="420"
+    MinHeight="280"
+    x:DataType="vm:SteamSignInDialogViewModel"
+    mc:Ignorable="d">
+
+    <Border
+        Background="{DynamicResource FeilSurfaceRaised}"
+        BorderBrush="{DynamicResource FeilBorderDim}"
+        BorderThickness="1"
+        BoxShadow="0 16 64 0 #55000000"
+        ClipToBounds="True"
+        CornerRadius="14">
+
+        <StackPanel>
+
+            <!--  ── Gradient Header Banner ───────────────────────  -->
+            <Border Padding="28,22,28,20">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                        <GradientStop Offset="0" Color="#1E2A44" />
+                        <GradientStop Offset="1" Color="#1C1F30" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid ColumnDefinitions="Auto,*">
+                    <!--  Accent icon box  -->
+                    <Border
+                        Grid.Column="0"
+                        Width="40"
+                        Height="40"
+                        Margin="0,0,14,0"
+                        Background="#1A5B97F8"
+                        BorderBrush="#335B97F8"
+                        BorderThickness="1"
+                        BoxShadow="0 0 20 0 #225B97F8"
+                        CornerRadius="10">
+                        <PathIcon
+                            Width="20"
+                            Height="20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"
+                            Foreground="{DynamicResource FeilAccentBrush}" />
+                    </Border>
+                    <!--  Title + subtitle  -->
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="3">
+                        <TextBlock
+                            FontSize="17"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource FeilTextPrimary}"
+                            Text="Steam Sign In" />
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{DynamicResource FeilTextSecondary}"
+                            Text="Authenticate to generate achievement schema" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  Thin accent divider  -->
+            <Border Height="1">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                        <GradientStop Offset="0" Color="#005B97F8" />
+                        <GradientStop Offset="0.4" Color="#665B97F8" />
+                        <GradientStop Offset="0.6" Color="#667AB3FF" />
+                        <GradientStop Offset="1" Color="#005B97F8" />
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <!--  ── Step content  ───────────────────────────────  -->
+            <StackPanel Margin="28,20,28,24" Spacing="20">
+
+                <!--  ── Credentials Step ─────────────────────────  -->
+                <StackPanel IsVisible="{Binding IsCredentialsStep}" Spacing="14">
+                    <StackPanel Spacing="6">
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource FeilTextSecondary}"
+                            Text="USERNAME" />
+                        <TextBox
+                            x:Name="UsernameBox"
+                            FontSize="13"
+                            PlaceholderText="Steam account name"
+                            Text="{Binding Username}" />
+                    </StackPanel>
+                    <StackPanel Spacing="6">
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource FeilTextSecondary}"
+                            Text="PASSWORD" />
+                        <TextBox
+                            FontSize="13"
+                            PasswordChar="•"
+                            PlaceholderText="Account password"
+                            RevealPassword="False"
+                            Text="{Binding Password}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!--  ── Connecting Step ──────────────────────────  -->
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding IsConnecting}"
+                    Spacing="12">
+                    <ProgressBar
+                        Height="3"
+                        CornerRadius="2"
+                        Foreground="{DynamicResource FeilAccentGradient}"
+                        IsIndeterminate="True" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="13"
+                        Foreground="{DynamicResource FeilTextSecondary}"
+                        Text="{Binding StatusMessage}" />
+                </StackPanel>
+
+                <!--  ── Steam Guard Step ─────────────────────────  -->
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding IsGuardStep}"
+                    Spacing="16">
+                    <StackPanel HorizontalAlignment="Center" Spacing="4">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource FeilTextPrimary}"
+                            Text="{Binding StatusMessage}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="12"
+                            Foreground="{DynamicResource FeilTextSecondary}"
+                            Text="Enter the code from your authenticator app" />
+                    </StackPanel>
+                    <u:PinCode
+                        x:Name="GuardPinCode"
+                        HorizontalAlignment="Center"
+                        Count="5" />
+                </StackPanel>
+
+                <!--  ── Working Step ─────────────────────────────  -->
+                <StackPanel IsVisible="{Binding IsWorking}" Spacing="12">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="13"
+                        Foreground="{DynamicResource FeilTextSecondary}"
+                        Text="{Binding StatusMessage}" />
+                    <ProgressBar
+                        Height="6"
+                        Classes="feil-progress"
+                        CornerRadius="3"
+                        Maximum="{Binding ProgressMax}"
+                        Minimum="0"
+                        Value="{Binding ProgressValue}" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="11"
+                        Foreground="{DynamicResource FeilTextMuted}"
+                        Text="{Binding ProgressText}" />
+                </StackPanel>
+
+                <!--  ── Done Step ────────────────────────────────  -->
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding IsDone}"
+                    Spacing="12">
+                    <Border
+                        Width="52"
+                        Height="52"
+                        HorizontalAlignment="Center"
+                        Background="#1A3DD68C"
+                        BorderBrush="#2A3DD68C"
+                        BorderThickness="1"
+                        BoxShadow="0 0 20 0 #223DD68C"
+                        CornerRadius="14"
+                        IsVisible="{Binding IsSuccess}">
+                        <PathIcon
+                            Width="24"
+                            Height="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                            Foreground="{DynamicResource FeilSuccessBrush}" />
+                    </Border>
+                    <Border
+                        Width="52"
+                        Height="52"
+                        HorizontalAlignment="Center"
+                        Background="#1AF5A623"
+                        BorderBrush="#2AF5A623"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        IsVisible="{Binding !IsSuccess}">
+                        <PathIcon
+                            Width="24"
+                            Height="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                            Foreground="{DynamicResource FeilWarningBrush}" />
+                    </Border>
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource FeilTextPrimary}"
+                        Text="{Binding StatusMessage}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!--  ── Error Message ────────────────────────────  -->
+                <Border
+                    Padding="12,10"
+                    Background="{DynamicResource FeilDangerSubtle}"
+                    BorderBrush="{DynamicResource FeilDangerBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    IsVisible="{Binding HasError}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon
+                            Width="13"
+                            Height="13"
+                            Margin="0,1,0,0"
+                            VerticalAlignment="Top"
+                            Data="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"
+                            Foreground="{DynamicResource FeilDangerBrush}" />
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{DynamicResource FeilDangerBrush}"
+                            Text="{Binding ErrorMessage}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <!--  ── Action Buttons ───────────────────────────  -->
+                <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding CanInteract}">
+                    <Button
+                        Grid.Column="0"
+                        HorizontalAlignment="Left"
+                        Classes="feil-ghost"
+                        Command="{Binding CancelCommand}">
+                        <TextBlock FontSize="13" Text="Cancel" />
+                    </Button>
+                    <Button
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Classes="feil-accent"
+                        Command="{Binding SignInCommand}"
+                        IsVisible="{Binding ShowSignIn}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon
+                                Width="14"
+                                Height="14"
+                                Data="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9z"
+                                Foreground="White" />
+                            <TextBlock
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Text="Sign In" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <!--  Close button for done state  -->
+                <Button
+                    HorizontalAlignment="Center"
+                    Classes="feil-ghost"
+                    Command="{Binding CancelCommand}"
+                    IsVisible="{Binding IsDone}">
+                    <TextBlock FontSize="13" Text="Close" />
+                </Button>
+
+            </StackPanel>
+
+        </StackPanel>
+    </Border>
+
+</UserControl>

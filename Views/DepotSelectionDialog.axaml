@@ -1,0 +1,160 @@
+<UserControl
+    x:Class="Feil.Views.DepotSelectionDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:vm="using:Feil.ViewModels"
+    Width="450"
+    MinHeight="380"
+    x:DataType="vm:DepotSelectionDialogViewModel"
+    mc:Ignorable="d">
+
+    <Border
+        Background="{DynamicResource FeilSurfaceRaised}"
+        BorderBrush="{DynamicResource FeilBorderDim}"
+        BorderThickness="1"
+        BoxShadow="0 16 64 0 #55000000"
+        ClipToBounds="True"
+        CornerRadius="14">
+
+        <StackPanel>
+            <Border Padding="28,22,28,20">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                        <GradientStop Offset="0" Color="#1E2A44" />
+                        <GradientStop Offset="1" Color="#1C1F30" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border
+                        Grid.Column="0"
+                        Width="40"
+                        Height="40"
+                        Margin="0,0,14,0"
+                        Background="#1A5B97F8"
+                        BorderBrush="#335B97F8"
+                        BorderThickness="1"
+                        BoxShadow="0 0 20 0 #225B97F8"
+                        CornerRadius="10">
+                        <PathIcon
+                            Width="20"
+                            Height="20"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                            Foreground="{DynamicResource FeilAccentBrush}" />
+                    </Border>
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="3">
+                        <TextBlock
+                            FontSize="17"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource FeilTextPrimary}"
+                            Text="Select Components" />
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{DynamicResource FeilTextSecondary}"
+                            Text="{Binding GameName, StringFormat='Choose which components to install for {0}'}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Height="1">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                        <GradientStop Offset="0" Color="#005B97F8" />
+                        <GradientStop Offset="0.4" Color="#665B97F8" />
+                        <GradientStop Offset="0.6" Color="#667AB3FF" />
+                        <GradientStop Offset="1" Color="#005B97F8" />
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <StackPanel Margin="28,20,28,24" Spacing="16">
+
+                <ScrollViewer MaxHeight="280" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding Depots}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:DepotSelectionItemViewModel">
+                                <Border
+                                    Margin="0,4"
+                                    Padding="12,10"
+                                    Background="{DynamicResource FeilSurfaceMuted}"
+                                    BorderBrush="{DynamicResource FeilBorderDim}"
+                                    BorderThickness="1"
+                                    CornerRadius="8">
+                                    <CheckBox VerticalAlignment="Center" IsChecked="{Binding IsSelected}">
+                                        <StackPanel
+                                            Margin="4,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Spacing="8">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource FeilTextPrimary}"
+                                                Text="{Binding Name}" />
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="12"
+                                                Foreground="{DynamicResource FeilTextSecondary}"
+                                                Text="{Binding DepotId, StringFormat='({0})'}" />
+                                            <Border
+                                                Margin="6,0,0,0"
+                                                Padding="6,2"
+                                                VerticalAlignment="Center"
+                                                Background="#1A5B97F8"
+                                                BorderBrush="#335B97F8"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
+                                                IsVisible="{Binding IsOsSpecific}">
+                                                <TextBlock
+                                                    FontSize="10"
+                                                    FontWeight="Bold"
+                                                    Foreground="{DynamicResource FeilAccentBrush}"
+                                                    Text="{Binding OsList}" />
+                                            </Border>
+                                        </StackPanel>
+                                    </CheckBox>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <Grid Margin="0,10,0,0" ColumnDefinitions="*,Auto">
+                    <Button
+                        Grid.Column="0"
+                        HorizontalAlignment="Left"
+                        Classes="feil-ghost"
+                        Command="{Binding CancelCommand}">
+                        <TextBlock FontSize="13" Text="Cancel" />
+                    </Button>
+                    <Button
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Classes="feil-accent"
+                        Command="{Binding ConfirmCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon
+                                Width="14"
+                                Height="14"
+                                Data="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
+                                Foreground="White" />
+                            <TextBlock
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Text="Download Selected" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

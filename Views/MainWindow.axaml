@@ -1,0 +1,306 @@
+<u:UrsaWindow
+    x:Class="Feil.Views.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="using:Feil.Views.Pages"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:vm="using:Feil.ViewModels"
+    Title="Feil"
+    Width="1100"
+    Height="720"
+    MinWidth="780"
+    MinHeight="520"
+    x:DataType="vm:MainWindowViewModel"
+    Background="{DynamicResource FeilSurface}"
+    CanMaximize="True"
+    CanMinimize="True"
+    CanResize="True"
+    ExtendClientAreaToDecorationsHint="False"
+    Icon="avares://Feil/Assets/icon.ico"
+    IsCloseButtonVisible="False"
+    IsManagedResizerVisible="True"
+    IsMinimizeButtonVisible="False"
+    IsRestoreButtonVisible="False"
+    IsTitleBarVisible="False"
+    WindowDecorations="None"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="Auto,*" RowDefinitions="38,*">
+
+        <!--  ═══════════════ TITLE BAR ═══════════════  -->
+        <Border
+            Grid.Row="0"
+            Grid.ColumnSpan="2"
+            Background="{DynamicResource FeilSurface}"
+            BorderBrush="{DynamicResource FeilBorder}"
+            BorderThickness="0,0,0,1">
+
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+
+                <!--  Col 0 — Sidebar toggle + logo (drag also works here)  -->
+                <StackPanel
+                    Grid.Column="0"
+                    Margin="6,0,4,0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="4">
+
+                    <Button
+                        x:Name="SidebarToggleBtn"
+                        Width="32"
+                        Height="32"
+                        Classes="feil-icon sidebar-toggle sidebar-open"
+                        Click="OnSidebarToggleClicked"
+                        ToolTip.Tip="Toggle sidebar">
+                        <PathIcon
+                            Width="14"
+                            Height="14"
+                            Data="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
+                            Foreground="{DynamicResource FeilTextSecondary}" />
+                    </Button>
+
+                    <!--  Logo icon pill  -->
+                    <Border
+                        Width="22"
+                        Height="22"
+                        Background="#1A5B97F8"
+                        BorderBrush="#335B97F8"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        PointerPressed="OnTitleBarPointerPressed">
+                        <PathIcon
+                            Width="14"
+                            Height="14"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="M1091.717 210.348c32.697 27.607 51.793 71.212 50.29 115.395-1.736 55.116-34.26 105.24-83.799 129.483-21.749 10.67-54.209 16.403-76.92 13.89l-9.908-1.2L839.147 696.95c-88.087 152.572-135.4 233.44-141.686 242.438-67.678 96.701-178.664 142.055-284.41 116.232-25.507-6.31-34.533-10.117-63.878-27.06-23.432-13.684-28.14-16.87-37.613-25.3-66.877-60.748-97.862-153.15-81.053-242.744 7.637-41.577 25.897-84.814 57-135.446 27.494-44.921 39.67-64.392 44.188-71.136 2.461-3.724 8.378-12.622 12.982-19.785 37.919-58.388 108.336-157.405 124.911-175.583 2.07-2.235 6.409 57.48 16.362 225.19.917 15.962 3.037 51.17 4.675 78.303s2.974 50.198 3.019 51.47c.026 1.575-.89.734-2.635-2.456-6.396-11.33-48.074-82.783-56.386-96.467-5.07-8.227-10.46-16.171-12.06-17.72-5.738-5.182-11.23-1.339-25.584 18.122-13.242 18.076-40.731 61.909-50.29 80.084-28.374 54.546-35.923 102.72-23.719 152.323 13.224 53.777 47.59 93.883 96.017 112.334 30.458 11.505 62.318 12.752 96.502 3.494 44.376-11.792 83.604-40.586 113.45-83.37 6.083-8.647 53.53-89.749 136.015-232.617l126.563-219.213-5.45-5.951c-36.394-39.563-47.726-100.665-28.208-151.75 5.455-14.31 21.947-40.174 32.259-50.745 30.917-31.41 73.805-47.645 116.976-44.389 32.206 2.538 58.998 13.642 84.623 35.14 M1025.013 257.572c-1.422-.508-5.87-1.985-9.781-3.308-18.375-6.244-42.119-2.65-59.703 9.178-33.27 22.256-41.533 65.187-18.926 98.66 16.934 25.21 46.875 36.26 76.516 28.12 21.158-5.866 33.831-16.477 44.843-37.71 6.08-11.61 6.472-13.1 7.263-25.27.524-8.738-.112-16.276-1.99-23.284-2.915-10.88-11.172-25.468-18.258-32.365-4.851-4.827-16.403-12.9-19.964-14.02"
+                            Foreground="{DynamicResource FeilAccentBrush}" />
+                    </Border>
+
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="13"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource FeilTextPrimary}"
+                        LetterSpacing="4"
+                        PointerPressed="OnTitleBarPointerPressed"
+                        Text="FEIL" />
+                </StackPanel>
+
+                <!--  Col 1 — Drag zone  -->
+                <Border
+                    Grid.Column="1"
+                    Background="Transparent"
+                    PointerPressed="OnTitleBarPointerPressed" />
+
+                <!--  Col 2 — Version label (fixed location, not in sidebar)  -->
+                <TextBlock
+                    Grid.Column="2"
+                    Margin="0,0,14,0"
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="{DynamicResource FeilTextMuted}"
+                    PointerPressed="OnTitleBarPointerPressed"
+                    Text="{Binding AppVersionLabel}" />
+
+                <!--  Col 3 — Window controls  -->
+                <StackPanel
+                    Grid.Column="3"
+                    Margin="0,0,6,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Stretch"
+                    Orientation="Horizontal"
+                    Spacing="2">
+                    <Button
+                        Width="32"
+                        Height="32"
+                        Classes="feil-icon"
+                        Click="OnMinimizeClicked">
+                        <PathIcon
+                            Width="12"
+                            Height="12"
+                            Data="{StaticResource WindowMinimizeGlyph}"
+                            Foreground="{DynamicResource FeilTextSecondary}" />
+                    </Button>
+                    <Button
+                        Width="32"
+                        Height="32"
+                        Classes="feil-icon"
+                        Click="OnMaximizeClicked">
+                        <PathIcon
+                            Width="12"
+                            Height="12"
+                            Data="{StaticResource WindowMaximizeGlyph}"
+                            Foreground="{DynamicResource FeilTextSecondary}" />
+                    </Button>
+                    <Button
+                        Width="32"
+                        Height="32"
+                        Classes="feil-icon"
+                        Click="OnCloseClicked">
+                        <PathIcon
+                            Width="12"
+                            Height="12"
+                            Data="{StaticResource WindowCloseIconGlyph}"
+                            Foreground="{DynamicResource FeilTextSecondary}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!--  ═══════════════ LEFT SIDEBAR ═══════════════  -->
+        <Border
+            x:Name="SidebarBorder"
+            Grid.Row="1"
+            Grid.Column="0"
+            Width="220"
+            Background="{DynamicResource FeilSurface}"
+            BorderBrush="{DynamicResource FeilBorder}"
+            BorderThickness="0,0,1,0"
+            ClipToBounds="True">
+
+            <Border.Transitions>
+                <Transitions>
+                    <DoubleTransition
+                        Easing="CubicEaseInOut"
+                        Property="Width"
+                        Duration="0:0:0.28" />
+                </Transitions>
+            </Border.Transitions>
+
+            <DockPanel>
+
+                <!--  Ambient top accent glow  -->
+                <Border Height="2" DockPanel.Dock="Top">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                            <GradientStop Offset="0" Color="#005B97F8" />
+                            <GradientStop Offset="0.4" Color="#885B97F8" />
+                            <GradientStop Offset="0.6" Color="#CC7AB3FF" />
+                            <GradientStop Offset="1" Color="#005B97F8" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+
+                <!--  Bottom dock: Settings pin.  -->
+                <Border
+                    Padding="8,6"
+                    BorderBrush="{DynamicResource FeilBorder}"
+                    BorderThickness="0,1,0,0"
+                    DockPanel.Dock="Bottom">
+
+                    <Button
+                        x:Name="SettingsPinBtn"
+                        Classes="sidebar-nav-pin"
+                        Click="OnSettingsPinClicked">
+                        <Grid ColumnDefinitions="40,Auto">
+                            <!--  Col 0 — fixed-width icon cell (matches NavMenu CollapseWidth)  -->
+                            <PathIcon
+                                Grid.Column="0"
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Data="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                            <!--  Col 1 — label (visible only when sidebar is wide enough)  -->
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Classes="sidebar-nav-label"
+                                FontSize="13"
+                                Text="Settings" />
+                        </Grid>
+                    </Button>
+
+                </Border>
+
+                <StackPanel Margin="8,8,8,0" Spacing="2">
+
+                    <Button
+                        x:Name="NavDownloads"
+                        Classes="sidebar-nav-item"
+                        Click="OnNavItemClicked"
+                        Tag="queue">
+                        <Grid ColumnDefinitions="40,Auto">
+                            <PathIcon
+                                Grid.Column="0"
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                FontSize="13"
+                                Text="Downloads" />
+                        </Grid>
+                    </Button>
+
+                    <Button
+                        x:Name="NavHistory"
+                        Classes="sidebar-nav-item"
+                        Click="OnNavItemClicked"
+                        Tag="history">
+                        <Grid ColumnDefinitions="40,Auto">
+                            <PathIcon
+                                Grid.Column="0"
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Data="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" />
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                FontSize="13"
+                                Text="History" />
+                        </Grid>
+                    </Button>
+
+                    <Button
+                        x:Name="NavSLSsteam"
+                        Classes="sidebar-nav-item"
+                        Click="OnNavItemClicked"
+                        IsVisible="{Binding SLSsteamPage.IsLinux}"
+                        Tag="slssteam">
+                        <Grid ColumnDefinitions="40,Auto">
+                            <PathIcon
+                                Grid.Column="0"
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                FontSize="13"
+                                Text="SLSsteam" />
+                        </Grid>
+                    </Button>
+
+                </StackPanel>
+
+            </DockPanel>
+        </Border>
+
+        <!--  ═══════════════ MAIN CONTENT ═══════════════  -->
+        <Border
+            Grid.Row="1"
+            Grid.Column="1"
+            Padding="0,0,0,24"
+            Background="{DynamicResource FeilSurface}">
+            <ContentControl Content="{Binding CurrentPage}" />
+        </Border>
+
+    </Grid>
+
+</u:UrsaWindow>
