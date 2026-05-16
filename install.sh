@@ -18,7 +18,7 @@ else
     NC=''
 fi
 
-log_info() { echo -e "${GREEN}[INFO]${NC} $*"; }
+log_info()  { echo -e "${GREEN}[INFO]${NC} $*"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $*"; }
 
 download_text() {
@@ -48,8 +48,20 @@ get_latest_url() {
     if ! json="$(download_text "$API_URL" 2>/dev/null)"; then
         return 1
     fi
-    # Extract the browser_download_url for the .AppImage asset (and exclude delta updates from Velopack)
+    # Extract the browser_download_url for the .AppImage asset (excluding Velopack delta packages)
     echo "$json" | grep '"browser_download_url"' | grep -E '\.AppImage"$' | grep -vi 'delta' | head -n1 | cut -d '"' -f 4
+}
+
+check_fuse() {
+    if ! ldconfig -p 2>/dev/null | grep -q libfuse.so.2 && ! [ -f /usr/lib/libfuse.so.2 ]; then
+        echo ""
+        log_error "WARNING: libfuse2 (FUSE 2.x) was not found on your system."
+        log_info  "Feil is distributed as an AppImage which requires FUSE 2 to run."
+        log_info  "On Debian/Ubuntu:  sudo apt install libfuse2"
+        log_info  "On Arch/CachyOS:   sudo pacman -S fuse2"
+        log_info  "On Fedora:         sudo dnf install fuse"
+        echo ""
+    fi
 }
 
 install_appimage() {
@@ -71,23 +83,34 @@ install_appimage() {
     cp -f "$appimage_path" "$target_appimage"
     chmod +x "$target_appimage"
 
-    # Extract AppImage to grab the icon
+    # Extract icon from AppImage
     log_info "Extracting icon from AppImage..."
     local temp_extract_dir
     temp_extract_dir="$(mktemp -d)"
     pushd "$temp_extract_dir" > /dev/null
+
+    "$target_appimage" --appimage-extract > /dev/null 2>&1
     
-    "$target_appimage" --appimage-extract feil.svg > /dev/null 2>&1
-    if [ -f "squashfs-root/feil.svg" ]; then
-        cp "squashfs-root/feil.svg" "$ICONS_DIR/feil.svg"
-        log_info "Icon installed successfully."
+    # Locate the first .svg file within the extracted directory
+    FOUND_SVG=$(find squashfs-root -name "*.svg" -print -quit)
+
+    if [ -n "$FOUND_SVG" ] && [ -f "$FOUND_SVG" ]; then
+        cp "$FOUND_SVG" "$ICONS_DIR/feil.svg"
+        log_info "Icon installed successfully from $FOUND_SVG."
+        
+        # Rebuild icon/service cache — kbuildsycoca on KDE, gtk cache on GTK desktops
+        if command -v kbuildsycoca6 >/dev/null 2>&1; then
+            kbuildsycoca6 --noincremental 2>/dev/null || true
+        elif command -v gtk-update-icon-cache >/dev/null 2>&1; then
+            gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+        fi
     else
-        log_error "Warning: Could not extract icon from AppImage."
+        log_error "Warning: Could not find any .svg icon in the AppImage."
     fi
     popd > /dev/null
     rm -rf "$temp_extract_dir"
 
-    # Create Desktop Entry
+    # Create desktop entry
     log_info "Creating desktop entry..."
     cat << EOF > "$APPLICATIONS_DIR/feil.desktop"
 [Desktop Entry]
@@ -97,39 +120,27 @@ Exec=$target_appimage
 Icon=feil
 Terminal=false
 Type=Application
-Categories=Utility;Games;
+Categories=Utility;Game;
 EOF
 
-    # Make the desktop file executable (some desktop environments require this)
     chmod +x "$APPLICATIONS_DIR/feil.desktop"
 
     # Update desktop database
     log_info "Updating desktop database..."
-    if command -v update-desktop-database > /dev/null 2>&1; then
+    if command -v update-desktop-database >/dev/null 2>&1; then
         update-desktop-database "$APPLICATIONS_DIR" 2>/dev/null || true
     fi
 
-    # Check if ~/.local/bin is in PATH
+    # Warn if ~/.local/bin is not in PATH
     if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
         echo ""
         log_info "WARNING: $INSTALL_DIR is not in your PATH."
-        log_info "You may need to add it to your ~/.bashrc or ~/.zshrc file to run 'Feil.AppImage' from the terminal."
+        log_info "You may need to add it to your ~/.bashrc or ~/.zshrc:"
         log_info "export PATH=\"\$HOME/.local/bin:\$PATH\""
         echo ""
     fi
 
-    check_fuse() {
-    if ! ldconfig -p 2>/dev/null | grep -q libfuse.so.2 && ! [ -f /usr/lib/libfuse.so.2 ]; then
-        echo ""
-        log_error "WARNING: libfuse2 (FUSE 2.x) was not found on your system."
-        log_info  "Feil is distributed as an AppImage which requires FUSE 2 to run."
-        log_info  "On Debian/Ubuntu:  sudo apt install libfuse2"
-        log_info  "On Arch/CachyOS:   sudo pacman -S fuse2"
-        log_info  "On Fedora:         sudo dnf install fuse"
-        echo ""
-    fi
-}
-
+    check_fuse
     log_info "Installation complete! You should now be able to find Feil in your application launcher."
 }
 
@@ -150,7 +161,7 @@ main() {
     log_info "Resolving latest Feil release from GitHub ($REPO)..."
     local url
     url="$(get_latest_url)"
-    
+
     if [ -z "$url" ]; then
         log_error "Could not find a release asset in the latest GitHub release."
         log_error "Make sure $REPO has a published release with a '.AppImage' asset attached."
@@ -160,7 +171,7 @@ main() {
     log_info "Latest release asset found: $url"
     local temp_dl
     temp_dl="$(mktemp)"
-    
+
     log_info "Downloading AppImage..."
     if download_file "$url" "$temp_dl"; then
         chmod +x "$temp_dl"
