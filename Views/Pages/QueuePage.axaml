@@ -1,0 +1,560 @@
+<UserControl
+    x:Class="Feil.Views.Pages.QueuePage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:jvm="using:Feil.ViewModels"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Feil.ViewModels.Pages"
+    x:DataType="vm:QueuePageViewModel"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,24" Spacing="20">
+
+            <!--
+                ══════════════════════════════════════════════════
+                PAGE HEADER
+                ══════════════════════════════════════════════════
+            -->
+            <StackPanel Spacing="3">
+                <TextBlock Classes="page-title" Text="Downloads" />
+                <TextBlock Classes="page-subtitle" Text="Manage your Steam content queue" />
+            </StackPanel>
+
+            <!--
+                ══════════════════════════════════════════════════
+                ACTIVE DOWNLOAD HERO CARD
+                ══════════════════════════════════════════════════
+            -->
+            <Border Classes="feil-card-hero" IsVisible="{Binding HasActiveJob}">
+
+                <Grid RowDefinitions="3,Auto,Auto">
+
+                    <!--  Gradient accent top strip  -->
+                    <Border Grid.Row="0" CornerRadius="12,12,0,0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                <GradientStop Offset="0" Color="#7AB3FF" />
+                                <GradientStop Offset="0.5" Color="#5B97F8" />
+                                <GradientStop Offset="1" Color="#3A72D4" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <!--  Title + controls row  -->
+                    <Grid
+                        Grid.Row="1"
+                        Margin="24,20,24,0"
+                        ColumnDefinitions="Auto,*,Auto">
+
+                        <!--  Game icon  -->
+                        <Border
+                            Grid.Column="0"
+                            Width="60"
+                            Height="60"
+                            Margin="0,0,18,0"
+                            Classes="game-icon">
+                            <Grid>
+                                <Image
+                                    IsVisible="{Binding ActiveJob.HasGameIcon}"
+                                    Source="{Binding ActiveJob.GameIcon}"
+                                    Stretch="UniformToFill" />
+                                <PathIcon
+                                    Width="20"
+                                    Height="20"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"
+                                    Foreground="{DynamicResource FeilTextMuted}"
+                                    IsVisible="{Binding !ActiveJob.HasGameIcon}" />
+                            </Grid>
+                        </Border>
+
+                        <!--  Game info  -->
+                        <StackPanel Grid.Column="1" Spacing="5">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Ellipse Classes="feil-pulse" />
+                                <TextBlock
+                                    FontSize="10"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource FeilSuccessBrush}"
+                                    LetterSpacing="1.5"
+                                    Text="{Binding ActiveJob.ActivePhaseLabel}" />
+                            </StackPanel>
+                            <TextBlock
+                                FontSize="22"
+                                FontWeight="Bold"
+                                Foreground="{DynamicResource FeilTextPrimary}"
+                                Text="{Binding ActiveJob.GameName}" />
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Border
+                                    Padding="6,2"
+                                    Background="#12FFFFFF"
+                                    BorderBrush="#1AFFFFFF"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                    <TextBlock FontSize="11" Foreground="{DynamicResource FeilTextSecondary}">
+                                        <Run Text="App " />
+                                        <Run Text="{Binding ActiveJob.AppId}" />
+                                    </TextBlock>
+                                </Border>
+                                <Border
+                                    Padding="6,2"
+                                    Background="#12FFFFFF"
+                                    BorderBrush="#1AFFFFFF"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                    <TextBlock FontSize="11" Foreground="{DynamicResource FeilTextSecondary}">
+                                        <Run Text="{Binding ActiveJob.DepotCount}" />
+                                        <Run Text=" depots" />
+                                    </TextBlock>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  Pause / Cancel buttons  -->
+                        <StackPanel
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button
+                                Classes="feil-ghost"
+                                Command="{Binding PauseResumeActiveCommand}"
+                                ToolTip.Tip="Pause / Resume">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <PathIcon
+                                        Width="14"
+                                        Height="14"
+                                        Data="M6 19h4V5H6v14zm8-14v14h4V5h-4z"
+                                        IsVisible="{Binding ActiveJob.IsActive}" />
+                                    <PathIcon
+                                        Width="14"
+                                        Height="14"
+                                        Data="M8 5v14l11-7z"
+                                        IsVisible="{Binding ActiveJob.IsPaused}" />
+                                    <TextBlock FontSize="13" Text="{Binding ActiveJob.PauseResumeLabel}" />
+                                </StackPanel>
+                            </Button>
+                            <Button
+                                Classes="feil-danger"
+                                Command="{Binding CancelActiveCommand}"
+                                ToolTip.Tip="Cancel download">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <PathIcon
+                                        Width="14"
+                                        Height="14"
+                                        Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                    <TextBlock FontSize="13" Text="Cancel" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!--  Progress section  -->
+                    <Grid
+                        Grid.Row="2"
+                        Margin="24,20,24,24"
+                        RowDefinitions="Auto,Auto,Auto">
+
+                        <!--  Glowing progress bar  -->
+                        <Border
+                            Grid.Row="0"
+                            Height="8"
+                            ClipToBounds="True"
+                            CornerRadius="4">
+                            <Border.Background>
+                                <SolidColorBrush Color="#1A5B97F8" />
+                            </Border.Background>
+                            <ProgressBar
+                                Height="8"
+                                Classes="feil-progress"
+                                CornerRadius="4"
+                                Maximum="100"
+                                Minimum="0"
+                                Value="{Binding ActiveJob.ProgressPercent}" />
+                        </Border>
+
+                        <!--  Percent + size  -->
+                        <Grid
+                            Grid.Row="1"
+                            Margin="0,10,0,0"
+                            ColumnDefinitions="Auto,*,Auto">
+                            <StackPanel
+                                Grid.Column="0"
+                                Orientation="Horizontal"
+                                Spacing="2">
+                                <TextBlock
+                                    FontSize="28"
+                                    FontWeight="Bold"
+                                    Foreground="{DynamicResource FeilAccentBrush}">
+                                    <Run Text="{Binding ActiveJob.ProgressPercent, StringFormat={}{0:F1}}" />
+                                </TextBlock>
+                                <TextBlock
+                                    Margin="0,0,0,4"
+                                    VerticalAlignment="Bottom"
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource FeilAccentDimBrush}"
+                                    Text="%" />
+                            </StackPanel>
+                            <TextBlock
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                FontSize="13"
+                                Foreground="{DynamicResource FeilTextSecondary}">
+                                <Run Text="{Binding ActiveJob.FormattedDownloaded}" />
+                                <Run Text=" / " />
+                                <Run Text="{Binding ActiveJob.FormattedTotal}" />
+                            </TextBlock>
+                        </Grid>
+
+                        <!--  Speed metric cards  -->
+                        <Grid
+                            Grid.Row="2"
+                            Margin="0,14,0,0"
+                            ColumnDefinitions="*,*,*"
+                            ColumnSpacing="8">
+
+                            <Border Grid.Column="0" Classes="feil-stat">
+                                <StackPanel Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <PathIcon
+                                            Width="11"
+                                            Height="11"
+                                            Data="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"
+                                            Foreground="{DynamicResource FeilTextMuted}" />
+                                        <TextBlock
+                                            Margin="0"
+                                            Classes="section-header"
+                                            Text="NETWORK" />
+                                    </StackPanel>
+                                    <TextBlock Classes="stat-value" Text="{Binding ActiveJob.FormattedNetworkSpeed}" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1" Classes="feil-stat">
+                                <StackPanel Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <PathIcon
+                                            Width="11"
+                                            Height="11"
+                                            Data="M20 6h-2.18c.07-.44.18-.88.18-1.36 0-2.57-2.1-4.64-4.67-4.64C11.34 0 9.97.96 9.09 2.33L8 4 6.91 2.33C6.03.96 4.66 0 2.67 0 .1 0-2 2.07-2 4.64-2 5.12-1.89 5.56-1.82 6H-4v14h24V6zm-9 12H5v-2h6v2zm0-4H5v-2h6v2zm0-4H5V8h6v2zm6 8h-4v-2h4v2zm0-4h-4v-2h4v2zm0-4h-4V8h4v2z"
+                                            Foreground="{DynamicResource FeilTextMuted}" />
+                                        <TextBlock
+                                            Margin="0"
+                                            Classes="section-header"
+                                            Text="DISK WRITE" />
+                                    </StackPanel>
+                                    <TextBlock Classes="stat-value" Text="{Binding ActiveJob.FormattedDiskSpeed}" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Classes="feil-stat">
+                                <StackPanel Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <PathIcon
+                                            Width="11"
+                                            Height="11"
+                                            Data="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"
+                                            Foreground="{DynamicResource FeilTextMuted}" />
+                                        <TextBlock
+                                            Margin="0"
+                                            Classes="section-header"
+                                            Text="ETA" />
+                                    </StackPanel>
+                                    <TextBlock Classes="stat-value" Text="{Binding ActiveJob.FormattedEta}" />
+                                </StackPanel>
+                            </Border>
+
+                        </Grid>
+                    </Grid>
+
+                </Grid>
+            </Border>
+
+            <!--
+                ══════════════════════════════════════════════════
+                QUEUE LIST HEADER
+                ══════════════════════════════════════════════════
+            -->
+            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding HasQueuedJobs}">
+                <StackPanel
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource FeilTextPrimary}"
+                        Text="Queue" />
+                    <Border
+                        Padding="8,2"
+                        Background="{DynamicResource FeilAccentSubtle}"
+                        BorderBrush="{DynamicResource FeilGhostHoverBg}"
+                        BorderThickness="1"
+                        CornerRadius="10">
+                        <TextBlock
+                            FontSize="11"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource FeilAccentBrush}"
+                            Text="{Binding QueuedJobs.Count}" />
+                    </Border>
+                </StackPanel>
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{DynamicResource FeilTextMuted}"
+                    Text="One job runs at a time" />
+            </Grid>
+
+            <!--
+                ══════════════════════════════════════════════════
+                QUEUED JOBS LIST
+                ══════════════════════════════════════════════════
+            -->
+            <ItemsControl IsVisible="{Binding HasQueuedJobs}" ItemsSource="{Binding QueuedJobs}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="jvm:DownloadJobViewModel">
+                        <Border
+                            Margin="0,0,0,6"
+                            Padding="16,14"
+                            Classes="feil-card">
+
+                            <Grid ColumnDefinitions="3,*,Auto">
+
+                                <!--  Status colour strip  -->
+                                <Border
+                                    Grid.Column="0"
+                                    Width="3"
+                                    Margin="0,0,14,0"
+                                    VerticalAlignment="Stretch"
+                                    CornerRadius="2">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                            <GradientStop Offset="0" Color="#7AB3FF" />
+                                            <GradientStop Offset="1" Color="#3A72D4" />
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+
+                                <!--  Job info  -->
+                                <StackPanel Grid.Column="1" Spacing="6">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+
+                                        <Border
+                                            Grid.Column="0"
+                                            Width="42"
+                                            Height="42"
+                                            Classes="game-icon">
+                                            <Grid>
+                                                <Image
+                                                    IsVisible="{Binding HasGameIcon}"
+                                                    Source="{Binding GameIcon}"
+                                                    Stretch="UniformToFill" />
+                                                <PathIcon
+                                                    Width="14"
+                                                    Height="14"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"
+                                                    Foreground="{DynamicResource FeilTextMuted}"
+                                                    IsVisible="{Binding !HasGameIcon}" />
+                                            </Grid>
+                                        </Border>
+
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            FontWeight="SemiBold"
+                                            Foreground="{DynamicResource FeilTextPrimary}"
+                                            Text="{Binding GameName}"
+                                            TextTrimming="CharacterEllipsis" />
+
+                                        <StackPanel
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Spacing="8">
+                                            <Border Classes="badge-queued" IsVisible="{Binding IsQueued}">
+                                                <TextBlock Foreground="{DynamicResource FeilAccentBrush}" Text="QUEUED" />
+                                            </Border>
+                                            <Border Classes="badge-paused" IsVisible="{Binding IsPaused}">
+                                                <TextBlock Foreground="{DynamicResource FeilWarningBrush}" Text="PAUSED" />
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel Orientation="Horizontal" Spacing="14">
+                                        <TextBlock FontSize="12" Foreground="{DynamicResource FeilTextSecondary}">
+                                            <Run Text="App " />
+                                            <Run Text="{Binding AppId}" />
+                                        </TextBlock>
+                                        <TextBlock FontSize="12" Foreground="{DynamicResource FeilTextSecondary}">
+                                            <Run Text="{Binding DepotCount}" />
+                                            <Run Text=" depots" />
+                                        </TextBlock>
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{DynamicResource FeilTextSecondary}"
+                                            Text="{Binding FormattedTotal}" />
+                                    </StackPanel>
+
+                                    <ProgressBar
+                                        Height="3"
+                                        Margin="0,2,0,0"
+                                        Classes="feil-progress"
+                                        IsVisible="{Binding IsPaused}"
+                                        Maximum="100"
+                                        Value="{Binding ProgressPercent}" />
+                                </StackPanel>
+
+                                <!--  Action buttons  -->
+                                <StackPanel
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="2">
+                                    <Button
+                                        Classes="feil-icon"
+                                        Command="{Binding $parent[UserControl].((vm:QueuePageViewModel)DataContext).MoveUpCommand}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip.Tip="Move up">
+                                        <PathIcon
+                                            Width="14"
+                                            Height="14"
+                                            Data="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"
+                                            Foreground="{DynamicResource FeilTextSecondary}" />
+                                    </Button>
+                                    <Button
+                                        Classes="feil-icon"
+                                        Command="{Binding $parent[UserControl].((vm:QueuePageViewModel)DataContext).MoveDownCommand}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip.Tip="Move down">
+                                        <PathIcon
+                                            Width="14"
+                                            Height="14"
+                                            Data="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"
+                                            Foreground="{DynamicResource FeilTextSecondary}" />
+                                    </Button>
+                                    <Button
+                                        Classes="feil-icon"
+                                        Command="{Binding $parent[UserControl].((vm:QueuePageViewModel)DataContext).RemoveFromQueueCommand}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip.Tip="Remove from queue">
+                                        <PathIcon
+                                            Width="14"
+                                            Height="14"
+                                            Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                                            Foreground="{DynamicResource FeilDangerBrush}" />
+                                    </Button>
+                                </StackPanel>
+
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!--
+                ══════════════════════════════════════════════════
+                EMPTY STATE
+                ══════════════════════════════════════════════════
+            -->
+            <Border
+                Padding="48"
+                Background="{DynamicResource FeilSurfaceRaised}"
+                BorderBrush="{DynamicResource FeilBorder}"
+                BorderThickness="1"
+                CornerRadius="12"
+                IsVisible="{Binding IsQueueEmpty}">
+                <StackPanel HorizontalAlignment="Center" Spacing="12">
+                    <Border
+                        Width="64"
+                        Height="64"
+                        HorizontalAlignment="Center"
+                        Background="#12FFFFFF"
+                        BorderBrush="{DynamicResource FeilBorder}"
+                        BorderThickness="1"
+                        CornerRadius="16">
+                        <PathIcon
+                            Width="28"
+                            Height="28"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
+                            Foreground="{DynamicResource FeilTextMuted}" />
+                    </Border>
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource FeilTextSecondary}"
+                        Text="Queue is empty" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="13"
+                        Foreground="{DynamicResource FeilTextMuted}"
+                        Text="Drop a .zip job file below or click Browse to get started" />
+                </StackPanel>
+            </Border>
+
+            <!--
+                ══════════════════════════════════════════════════
+                DROP ZONE
+                ══════════════════════════════════════════════════
+            -->
+            <Border
+                x:Name="DropZone"
+                Classes="feil-drop-zone"
+                DragDrop.AllowDrop="True">
+
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="10">
+                    <Border
+                        Width="52"
+                        Height="52"
+                        HorizontalAlignment="Center"
+                        Background="#10FFFFFF"
+                        BorderBrush="{DynamicResource FeilBorderDim}"
+                        BorderThickness="1"
+                        CornerRadius="14">
+                        <PathIcon
+                            Width="24"
+                            Height="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
+                            Foreground="{DynamicResource FeilTextMuted}" />
+                    </Border>
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource FeilTextSecondary}"
+                        Text="Drop .zip job file here" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{DynamicResource FeilTextMuted}"
+                        Text="or" />
+                    <Button
+                        HorizontalAlignment="Center"
+                        Classes="feil-ghost"
+                        Click="OnAddJobClick">
+                        <TextBlock FontSize="13" Text="Browse for file" />
+                    </Button>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

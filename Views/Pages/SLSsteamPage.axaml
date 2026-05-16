@@ -1,0 +1,311 @@
+<UserControl
+    x:Class="Feil.Views.Pages.SLSsteamPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Feil.ViewModels.Pages"
+    x:DataType="vm:SLSsteamPageViewModel"
+    Background="Transparent">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel
+            MaxWidth="680"
+            Margin="28,24"
+            Spacing="20">
+
+            <!--  Page header  -->
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="3">
+                    <TextBlock Classes="page-title" Text="SLSsteam Configuration" />
+                    <TextBlock Classes="page-subtitle" Text="Configure local SLSsteam injection settings" />
+                </StackPanel>
+
+                <!--  Update button — feil-ghost instead of raw SemiUI theme  -->
+                <Button
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Classes="feil-ghost"
+                    Command="{Binding UpdateSlsCommand}">
+                    <ToolTip.Tip>
+                        <TextBlock Text="Runs 'curl -fsSL headcrab.pages.dev | bash' in your terminal" />
+                    </ToolTip.Tip>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon
+                            Width="14"
+                            Height="14"
+                            Data="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.87 6.87 0 0 0 0 9.79 7.02 7.02 0 0 0 9.88 0C18.32 15.65 19 14.08 19 12.1h2c0 2.5-.99 4.85-2.74 6.63a8.95 8.95 0 0 1-12.72 0 8.87 8.87 0 0 1 0-12.63 8.95 8.95 0 0 1 12.72 0L21 3.28v6.84z" />
+                        <TextBlock FontWeight="SemiBold" Text="Update" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!--  Not installed warning  -->
+            <Border
+                Padding="14,10"
+                Background="{DynamicResource FeilDangerSubtle}"
+                BorderBrush="{DynamicResource FeilDangerBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                IsVisible="{Binding !IsSlsInstalled}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <PathIcon
+                        Width="14"
+                        Height="14"
+                        Data="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"
+                        Foreground="{DynamicResource FeilDangerBrush}" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="13"
+                        Foreground="{DynamicResource FeilDangerBrush}"
+                        Text="SLSsteam is not installed or not available on Windows." />
+                </StackPanel>
+            </Border>
+
+            <StackPanel IsVisible="{Binding IsSlsInstalled}" Spacing="20">
+
+                <!--
+                    ══════════════════════════════════════════════════
+                    NOTIFICATIONS SECTION
+                    ══════════════════════════════════════════════════
+                -->
+                <Border Classes="feil-card">
+                    <StackPanel Spacing="20">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Classes="section-icon">
+                                <PathIcon
+                                    Width="16"
+                                    Height="16"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Data="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.93 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" />
+                            </Border>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource FeilTextPrimary}"
+                                Text="Notifications" />
+                        </StackPanel>
+
+                        <Separator Classes="feil-divider" />
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource FeilTextPrimary}"
+                                    Text="Desktop Notifications" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource FeilTextSecondary}"
+                                    Text="Allow SLSsteam to spawn desktop notifications for events and initialization" />
+                            </StackPanel>
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding Notifications}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!--
+                    ══════════════════════════════════════════════════
+                    STATUS OVERRIDES SECTION
+                    ══════════════════════════════════════════════════
+                -->
+                <Border Classes="feil-card">
+                    <StackPanel Spacing="20">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Classes="section-icon">
+                                <PathIcon
+                                    Width="16"
+                                    Height="16"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                            </Border>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource FeilTextPrimary}"
+                                Text="Status Overrides" />
+                        </StackPanel>
+
+                        <Separator Classes="feil-divider" />
+
+                        <!--  Idle Status  -->
+                        <StackPanel Spacing="8">
+                            <StackPanel Spacing="2">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource FeilTextPrimary}"
+                                    Text="Idle Status" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource FeilTextSecondary}"
+                                    Text="Status shown while idling in SLSsteam" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,16,*" RowDefinitions="Auto,6,Auto">
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource FeilTextSecondary}"
+                                    Text="Target App ID" />
+                                <TextBox
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    PlaceholderText="e.g. 420"
+                                    Text="{Binding IdleStatusAppId}" />
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="2"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource FeilTextSecondary}"
+                                    Text="Custom Title" />
+                                <TextBox
+                                    Grid.Row="2"
+                                    Grid.Column="2"
+                                    PlaceholderText="Custom idle title"
+                                    Text="{Binding IdleStatusTitle}" />
+                            </Grid>
+                        </StackPanel>
+
+                        <!--  Unowned Status  -->
+                        <StackPanel Spacing="8">
+                            <StackPanel Spacing="2">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource FeilTextPrimary}"
+                                    Text="Unowned Status" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource FeilTextSecondary}"
+                                    Text="Status shown when launching an unowned game" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,16,*" RowDefinitions="Auto,6,Auto">
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource FeilTextSecondary}"
+                                    Text="Target App ID" />
+                                <TextBox
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    PlaceholderText="e.g. 420"
+                                    Text="{Binding UnownedStatusAppId}" />
+                                <TextBlock
+                                    Grid.Row="0"
+                                    Grid.Column="2"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource FeilTextSecondary}"
+                                    Text="Custom Title" />
+                                <TextBox
+                                    Grid.Row="2"
+                                    Grid.Column="2"
+                                    PlaceholderText="Custom unowned title"
+                                    Text="{Binding UnownedStatusTitle}" />
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!--
+                    ══════════════════════════════════════════════════
+                    BEHAVIOR & MOCKING SECTION
+                    ══════════════════════════════════════════════════
+                -->
+                <Border Classes="feil-card">
+                    <StackPanel Spacing="20">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Classes="section-icon">
+                                <PathIcon
+                                    Width="16"
+                                    Height="16"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Data="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                            </Border>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource FeilTextPrimary}"
+                                Text="Behavior &amp; Mocking" />
+                        </StackPanel>
+
+                        <Separator Classes="feil-divider" />
+
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,16,Auto">
+                            <StackPanel
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Spacing="2">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource FeilTextPrimary}"
+                                    Text="Fake Email" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource FeilTextSecondary}"
+                                    Text="Override your visible account email" />
+                            </StackPanel>
+                            <TextBox
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Width="220"
+                                PlaceholderText="Leave blank to disable"
+                                Text="{Binding FakeEmail}" />
+
+                            <StackPanel
+                                Grid.Row="2"
+                                Grid.Column="0"
+                                Spacing="2">
+                                <TextBlock
+                                    FontSize="13"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource FeilTextPrimary}"
+                                    Text="Fake Wallet Balance" />
+                                <TextBlock
+                                    FontSize="11"
+                                    Foreground="{DynamicResource FeilTextSecondary}"
+                                    Text="Override your visible wallet capacity" />
+                            </StackPanel>
+                            <TextBox
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                Width="220"
+                                PlaceholderText="e.g. 420"
+                                Text="{Binding FakeWalletBalance}" />
+                        </Grid>
+
+                    </StackPanel>
+                </Border>
+
+                <!--  Save button — feil-accent instead of raw SemiUI SolidButton  -->
+                <Button
+                    HorizontalAlignment="Right"
+                    Classes="feil-accent"
+                    Command="{Binding SaveCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <PathIcon
+                            Width="14"
+                            Height="14"
+                            Data="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"
+                            Foreground="White" />
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="Save Configuration" />
+                    </StackPanel>
+                </Button>
+
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

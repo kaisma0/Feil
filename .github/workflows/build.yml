@@ -1,0 +1,47 @@
+name: Build AppImage
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+
+    - name: Extract version from csproj
+      id: version
+      run: |
+        VERSION=$(grep -oP '(?<=<Version>)[^<]+' Feil.csproj)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Publish application
+      run: |
+        dotnet publish Feil.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o publish_output
+
+    - name: Download and setup Velopack CLI (vpk)
+      run: |
+        dotnet tool install -g vpk
+
+    - name: Build AppImage with Velopack
+      run: |
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        vpk pack -u Feil -v ${{ steps.version.outputs.version }} -p publish_output -e Feil --icon Assets/icon.svg -o velopack_release
+
+    - name: Create GitHub Release
+      run: |
+        gh release create v${{ steps.version.outputs.version }} velopack_release/* \
+          --title "Feil v${{ steps.version.outputs.version }}" \
+          --notes "Release v${{ steps.version.outputs.version }}" \
+          --latest
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
