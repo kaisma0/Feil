@@ -20,7 +20,6 @@ public sealed class PersistedDownloadJob
     public int AppId { get; set; }
     public DownloadJobRunMode RunMode { get; set; } = DownloadJobRunMode.DownloadAndVerify;
     public DownloadJobStatus Status { get; set; }
-    public DownloadJobStatus ResumeStatus { get; set; } = DownloadJobStatus.Downloading;
     public long TotalBytes { get; set; }
     public int DepotCount { get; set; }
     public string? JobDirectory { get; set; }

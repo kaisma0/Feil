@@ -24,6 +24,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
     private readonly SettingsPageViewModel? _settings;
     private CancellationTokenSource? _activeJobCts;
     private readonly System.Threading.Timer _speedTimer;
+    private DownloadJobStatus? _pausedActiveJobStatus;
     private bool _isRestoringQueueState;
     private volatile bool _isDisposed;
     // Queue mutations are UI-thread owned. Background callbacks must post to the dispatcher
@@ -65,10 +66,6 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
 
         QueuedJobs.CollectionChanged += OnQueuedJobsChanged;
 
-        _downloadService.ProgressChanged = OnProgressChanged;
-        _downloadService.TotalSizeChanged = OnTotalSizeChanged;
-        _downloadService.DiskProgressChanged = OnDiskProgressChanged;
-
         _speedTimer = new System.Threading.Timer(UpdateSpeedMetrics, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
 
         RestorePersistedQueueState();
@@ -100,6 +97,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
         _smoothedNetworkBps = 0;
         _smoothedDiskBps = 0;
         _smoothedEtaBps = 0;
+        _pausedActiveJobStatus = null;
         PersistQueueState();
     }
 
@@ -111,13 +109,14 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
         if (ActiveJob.Status is DownloadJobStatus.Downloading or DownloadJobStatus.Verifying)
         {
             _downloadService.Pause();
-            ActiveJob.ResumeStatus = ActiveJob.Status;
+            _pausedActiveJobStatus = ActiveJob.Status;
             ActiveJob.Status = DownloadJobStatus.Paused;
         }
         else if (ActiveJob.Status == DownloadJobStatus.Paused)
         {
             _downloadService.Resume();
-            ActiveJob.Status = ActiveJob.ResumeStatus;
+            ActiveJob.Status = _pausedActiveJobStatus ?? ActiveJob.GetInitialRunningStatus();
+            _pausedActiveJobStatus = null;
         }
 
         PersistQueueState();
@@ -589,28 +588,36 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private void OnProgressChanged(ulong downloaded, ulong total)
+    private void OnProgressChanged(Guid jobId, ulong downloaded, ulong total)
     {
+        if (!IsProgressForActiveJob(jobId)) return;
+
         Interlocked.Exchange(ref _currentDownloadedBytes, (long)downloaded);
         Interlocked.Exchange(ref _currentTotalBytes, (long)total);
     }
 
-    private void OnDiskProgressChanged(ulong diskBytesWritten)
+    private void OnDiskProgressChanged(Guid jobId, ulong diskBytesWritten)
     {
+        if (!IsProgressForActiveJob(jobId)) return;
+
         Interlocked.Exchange(ref _currentDiskWrittenBytes, (long)diskBytesWritten);
     }
 
-    private void OnTotalSizeChanged(ulong compressedTotal)
+    private void OnTotalSizeChanged(Guid jobId, ulong compressedTotal)
     {
+        if (!IsProgressForActiveJob(jobId)) return;
+
         Interlocked.Exchange(ref _currentTotalBytes, (long)compressedTotal);
 
         Dispatcher.UIThread.Post(() =>
         {
             var job = ActiveJob;
-            if (_isDisposed || job is null) return;
+            if (_isDisposed || job?.Id != jobId) return;
             job.TotalBytes = (long)compressedTotal;
         });
     }
+
+    private bool IsProgressForActiveJob(Guid jobId) => ActiveJob?.Id == jobId;
 
     private void UpdateSpeedMetrics(object? state)
     {
@@ -746,11 +753,11 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
 
         if (isActive)
         {
+            var initialStatus = job.GetInitialRunningStatus();
+
             if (job.Status != DownloadJobStatus.Paused)
             {
                 var autoResumeOnStart = _settings?.AutoResumeOnStart ?? true;
-                var initialStatus = job.GetInitialRunningStatus();
-                job.ResumeStatus = initialStatus;
                 job.Status = autoResumeOnStart ? initialStatus : DownloadJobStatus.Paused;
             }
         }
@@ -826,6 +833,10 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
     private async Task<int> ExecuteJobAsync(DownloadJobViewModel job, CancellationToken cancellationToken)
     {
         var depotManifests = BuildDepotManifestList(job.Job);
+
+        _downloadService.ProgressChanged = (downloaded, total) => OnProgressChanged(job.Id, downloaded, total);
+        _downloadService.TotalSizeChanged = total => OnTotalSizeChanged(job.Id, total);
+        _downloadService.DiskProgressChanged = diskBytesWritten => OnDiskProgressChanged(job.Id, diskBytesWritten);
 
         PreparePhaseProgress(job, resetProgress: job.Status == DownloadJobStatus.Verifying);
         int result = await ExecutePhaseAsync(job, depotManifests, verifyAll: job.Status == DownloadJobStatus.Verifying, cancellationToken);

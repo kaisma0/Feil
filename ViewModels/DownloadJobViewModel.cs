@@ -13,7 +13,6 @@ public partial class DownloadJobViewModel : ObservableObject
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
     public DownloadJob Job { get; private set; } = null!;
-    public DownloadJobStatus ResumeStatus { get; set; } = DownloadJobStatus.Downloading;
 
     [ObservableProperty] private string             _gameName                = string.Empty;
     [ObservableProperty] private int                _appId;
@@ -115,7 +114,6 @@ public partial class DownloadJobViewModel : ObservableObject
             JobDirectory = persisted.JobDirectory,
             InstallDirectory = persisted.InstallDirectory,
             Status = persisted.Status,
-            ResumeStatus = persisted.ResumeStatus,
             StartedAt = persisted.StartedAt,
             Job = persisted.Job
         };
@@ -136,7 +134,6 @@ public partial class DownloadJobViewModel : ObservableObject
             GameIconUrl = entry.GameIconUrl,
             RunMode = DownloadJobRunMode.VerifyOnly,
             Status = DownloadJobStatus.Queued,
-            ResumeStatus = DownloadJobStatus.Verifying,
             DepotCount = entry.DepotCount == 0 ? entry.Job.Depots.Count : entry.DepotCount,
             TotalBytes = entry.TotalBytes > 0 ? entry.TotalBytes : entry.Job.Depots.Sum(d => d.SizeBytes ?? 0),
             JobDirectory = entry.JobDirectory,
@@ -155,7 +152,6 @@ public partial class DownloadJobViewModel : ObservableObject
 
     public void SetRunningStatus(DownloadJobStatus status)
     {
-        ResumeStatus = status;
         Status = status;
     }
 
@@ -168,7 +164,6 @@ public partial class DownloadJobViewModel : ObservableObject
         AppId = AppId,
         RunMode = RunMode,
         Status = Status,
-        ResumeStatus = ResumeStatus,
         TotalBytes = TotalBytes,
         DepotCount = DepotCount,
         JobDirectory = JobDirectory,
