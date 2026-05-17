@@ -36,7 +36,7 @@ public sealed class JobArchiveImportService
 
         var job = parser.Parse(lines);
         var gameName = await ResolveGameNameAsync(job.AppId);
-        var installDirectory = ResolveInstallDirectory(installBaseDirectory, gameName, job.AppId);
+        var installDirectory = await ResolveInstallDirectoryAsync(installBaseDirectory, job.AppId, gameName);
         var jobDirectory = GetImportedJobDirectory(installDirectory);
         var metadataDirectory = Path.GetDirectoryName(jobDirectory)!;
         Directory.CreateDirectory(metadataDirectory);
@@ -128,12 +128,28 @@ public sealed class JobArchiveImportService
         }
     }
 
-    public static string ResolveInstallDirectory(string installBaseDirectory, string gameName, int appId)
+    public static async Task<string> ResolveInstallDirectoryAsync(
+        string installBaseDirectory,
+        int appId,
+        string? fallbackDirectoryName = null)
     {
-        var resolvedGameName = string.IsNullOrWhiteSpace(gameName) ? $"App {appId}" : gameName;
-        var safeGameName = string.Join("_", resolvedGameName.Split(Path.GetInvalidFileNameChars()));
+        var installDirectoryName = await SteamAppInfoService.GetConfiguredInstallDirectoryNameAsync(appId);
+        if (string.IsNullOrWhiteSpace(installDirectoryName))
+        {
+            installDirectoryName = string.IsNullOrWhiteSpace(fallbackDirectoryName)
+                ? $"App {appId}"
+                : fallbackDirectoryName;
+        }
 
-        return Path.Combine(installBaseDirectory, safeGameName);
+        return ResolveInstallDirectory(installBaseDirectory, installDirectoryName, appId);
+    }
+
+    public static string ResolveInstallDirectory(string installBaseDirectory, string directoryName, int appId)
+    {
+        var resolvedDirectoryName = string.IsNullOrWhiteSpace(directoryName) ? $"App {appId}" : directoryName;
+        var safeDirectoryName = string.Join("_", resolvedDirectoryName.Split(Path.GetInvalidFileNameChars()));
+
+        return Path.Combine(installBaseDirectory, safeDirectoryName);
     }
 
     private static string GetImportedJobDirectory(string installDirectory) =>

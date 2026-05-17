@@ -870,7 +870,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
         var config = new Feil.Core.DownloadConfig
         {
             JobDirectory = job.JobDirectory,
-            InstallDirectory = EnsureInstallDirectory(job),
+            InstallDirectory = await EnsureInstallDirectoryAsync(job),
             VerifyAll = verifyAll,
         };
 
@@ -936,11 +936,12 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
         });
     }
 
-    private string EnsureInstallDirectory(DownloadJobViewModel job)
+    private async Task<string> EnsureInstallDirectoryAsync(DownloadJobViewModel job)
     {
         if (string.IsNullOrWhiteSpace(job.InstallDirectory))
         {
-            job.InstallDirectory = ResolveInstallDirectory(job.GameName, job.AppId);
+            job.InstallDirectory = await ResolveInstallDirectoryAsync(job.GameName, job.AppId);
+            PersistQueueState();
         }
 
         Directory.CreateDirectory(job.InstallDirectory);
@@ -964,9 +965,9 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
         });
     }
 
-    private string ResolveInstallDirectory(string gameName, int appId)
+    private async Task<string> ResolveInstallDirectoryAsync(string gameName, int appId)
     {
-        return JobArchiveImportService.ResolveInstallDirectory(GetInstallBaseDirectory(), gameName, appId);
+        return await JobArchiveImportService.ResolveInstallDirectoryAsync(GetInstallBaseDirectory(), appId, gameName);
     }
 
     private string GetInstallBaseDirectory() =>

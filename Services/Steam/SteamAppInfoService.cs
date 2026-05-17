@@ -125,6 +125,24 @@ public static class SteamAppInfoService
         return null;
     }
 
+    public static async Task<string?> GetConfiguredInstallDirectoryNameAsync(int appId)
+    {
+        var appElement = await GetSteamCmdAppInfoAsync(appId);
+        if (appElement.HasValue &&
+            appElement.Value.TryGetProperty("config", out var configElement) &&
+            configElement.ValueKind == JsonValueKind.Object &&
+            configElement.TryGetProperty("installdir", out var installDirElement))
+        {
+            var installDir = installDirElement.GetString();
+            if (!string.IsNullOrWhiteSpace(installDir))
+            {
+                return installDir;
+            }
+        }
+
+        return null;
+    }
+
     public static async Task<string?> GetHeaderImageUrlAsync(int appId)
     {
         return (await GetMetadataAsync(appId))?.HeaderImageUrl;
