@@ -172,45 +172,6 @@
                                     Text="{Binding IdleStatusTitle}" />
                             </Grid>
                         </StackPanel>
-
-                        <!--  Unowned Status  -->
-                        <StackPanel Spacing="8">
-                            <StackPanel Spacing="2">
-                                <TextBlock
-                                    FontSize="13"
-                                    FontWeight="SemiBold"
-                                    Foreground="{DynamicResource FeilTextPrimary}"
-                                    Text="Unowned Status" />
-                                <TextBlock
-                                    FontSize="11"
-                                    Foreground="{DynamicResource FeilTextSecondary}"
-                                    Text="Status shown when launching an unowned game" />
-                            </StackPanel>
-                            <Grid ColumnDefinitions="*,16,*" RowDefinitions="Auto,6,Auto">
-                                <TextBlock
-                                    Grid.Row="0"
-                                    Grid.Column="0"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource FeilTextSecondary}"
-                                    Text="Target App ID" />
-                                <TextBox
-                                    Grid.Row="2"
-                                    Grid.Column="0"
-                                    PlaceholderText="e.g. 420"
-                                    Text="{Binding UnownedStatusAppId}" />
-                                <TextBlock
-                                    Grid.Row="0"
-                                    Grid.Column="2"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource FeilTextSecondary}"
-                                    Text="Custom Title" />
-                                <TextBox
-                                    Grid.Row="2"
-                                    Grid.Column="2"
-                                    PlaceholderText="Custom unowned title"
-                                    Text="{Binding UnownedStatusTitle}" />
-                            </Grid>
-                        </StackPanel>
                     </StackPanel>
                 </Border>
 
