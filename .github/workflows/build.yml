@@ -12,12 +12,44 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - name: Extract version from csproj
       id: version
       run: |
         VERSION=$(grep -oP '(?<=<Version>)[^<]+' Feil.csproj)
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Generate release notes
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        PREVIOUS_RELEASE_TAG="$(gh release list --limit 1 --json tagName --jq '.[0].tagName // ""')"
+
+        {
+          echo "## Release v${VERSION}"
+          echo
+          echo "### Changes since last release"
+          echo
+        } > release-notes.md
+
+        if [ -n "$PREVIOUS_RELEASE_TAG" ]; then
+          COMMIT_RANGE="${PREVIOUS_RELEASE_TAG}..HEAD"
+        else
+          COMMIT_RANGE="HEAD"
+        fi
+
+        if git log --format="%H%x09%s" "$COMMIT_RANGE" | grep -q .; then
+          git log --format="%H%x09%s" "$COMMIT_RANGE" | while IFS=$'\t' read -r SHA MESSAGE; do
+            SHORT_SHA="${SHA:0:7}"
+            COMMIT_URL="https://github.com/${GITHUB_REPOSITORY}/commit/${SHA}"
+            echo "- ${MESSAGE} ([${SHORT_SHA}](${COMMIT_URL}))" >> release-notes.md
+          done
+        else
+          echo "- No commits since ${PREVIOUS_RELEASE_TAG}." >> release-notes.md
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
@@ -44,7 +76,7 @@ jobs:
           velopack_release/releases.linux.json \
           velopack_release/Feil-*-linux-full.nupkg \
           --title "Feil v${{ steps.version.outputs.version }}" \
-          --notes "Release v${{ steps.version.outputs.version }}" \
+          --notes-file release-notes.md \
           --latest
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
