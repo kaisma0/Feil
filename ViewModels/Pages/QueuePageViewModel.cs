@@ -512,7 +512,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
                                         var sls = new Feil.Services.SLSsteam.SLSsteamService();
                                         if (sls.IsInstalled())
                                         {
-                                            sls.ModifyConfig(new[] { "AdditionalApps" }, "add", jobToRun.AppId, "list");
+                                            sls.ModifyConfig(new[] { "AdditionalApps" }, "add", jobToRun.AppId, jobToRun.GameName);
                                         }
                                     }
 

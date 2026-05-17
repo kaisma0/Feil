@@ -46,11 +46,11 @@ public partial class SLSsteamPageViewModel : ViewModelBase
     {
         var idleAppId = _slsService.GetConfigValue(new[] { "IdleStatus", "AppId" });
         IdleStatusAppId = (idleAppId == "0" || string.IsNullOrWhiteSpace(idleAppId)) ? "" : idleAppId;
-        IdleStatusTitle = _slsService.GetConfigValue(new[] { "IdleStatus", "Title" }) ?? "";
+        IdleStatusTitle = (_slsService.GetConfigValue(new[] { "IdleStatus", "Title" }) ?? "").Trim('"');
 
         var unownedAppId = _slsService.GetConfigValue(new[] { "UnownedStatus", "AppId" });
         UnownedStatusAppId = (unownedAppId == "0" || string.IsNullOrWhiteSpace(unownedAppId)) ? "" : unownedAppId;
-        UnownedStatusTitle = _slsService.GetConfigValue(new[] { "UnownedStatus", "Title" }) ?? "";
+        UnownedStatusTitle = (_slsService.GetConfigValue(new[] { "UnownedStatus", "Title" }) ?? "").Trim('"');
 
         var notifyVal = (_slsService.GetConfigValue(new[] { "Notifications" }) ?? "no").Trim().ToLower();
         Notifications = (notifyVal == "yes" || notifyVal == "true");
@@ -109,10 +109,10 @@ public partial class SLSsteamPageViewModel : ViewModelBase
         if (!IsSlsInstalled) return;
 
         _slsService.ModifyConfig(new[] { "IdleStatus", "AppId" }, "set", string.IsNullOrWhiteSpace(IdleStatusAppId) ? "0" : IdleStatusAppId);
-        _slsService.ModifyConfig(new[] { "IdleStatus", "Title" }, "set", string.IsNullOrWhiteSpace(IdleStatusTitle) ? "" : IdleStatusTitle);
+        _slsService.ModifyConfig(new[] { "IdleStatus", "Title" }, "set", string.IsNullOrWhiteSpace(IdleStatusTitle) ? "\"\"" : $"\"{IdleStatusTitle}\"");
 
         _slsService.ModifyConfig(new[] { "UnownedStatus", "AppId" }, "set", string.IsNullOrWhiteSpace(UnownedStatusAppId) ? "0" : UnownedStatusAppId);
-        _slsService.ModifyConfig(new[] { "UnownedStatus", "Title" }, "set", string.IsNullOrWhiteSpace(UnownedStatusTitle) ? "" : UnownedStatusTitle);
+        _slsService.ModifyConfig(new[] { "UnownedStatus", "Title" }, "set", string.IsNullOrWhiteSpace(UnownedStatusTitle) ? "\"\"" : $"\"{UnownedStatusTitle}\"");
 
         string notifyStr = Notifications ? "yes" : "no";
         _slsService.ModifyConfig(new[] { "Notifications" }, "set", notifyStr);

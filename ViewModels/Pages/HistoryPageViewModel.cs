@@ -136,7 +136,7 @@ public partial class HistoryPageViewModel : ViewModelBase
             var sls = new Feil.Services.SLSsteam.SLSsteamService();
             if (sls.IsInstalled())
             {
-                sls.ModifyConfig(new[] { "FakeAppIds" }, "add", new System.Collections.Generic.KeyValuePair<string, string>(entry.AppId.ToString(), "480"), "dictionary");
+                sls.ModifyConfig(new[] { "FakeAppIds" }, "add", new System.Collections.Generic.KeyValuePair<string, string>(entry.AppId.ToString(), "480"), entry.GameName);
             }
         }
     }
