@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using Serilog;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -50,17 +51,17 @@ public class DepotConfigStore
                 }
                 catch (IOException ex)
                 {
-                    Logger.WriteLine("Failed to load depot configuration: {0}", ex.Message);
+                    Log.Error("Failed to load depot configuration: {Error}", ex.Message);
                     _instance = new DepotConfigStore();
                 }
                 catch (InvalidDataException ex)
                 {
-                    Logger.WriteLine("Depot configuration file is invalid: {0}", ex.Message);
+                    Log.Error("Depot configuration file is invalid: {Error}", ex.Message);
                     _instance = new DepotConfigStore();
                 }
                 catch (ProtoException ex)
                 {
-                    Logger.WriteLine("Depot configuration deserialization failed: {0}", ex.Message);
+                    Log.Error("Depot configuration deserialization failed: {Error}", ex.Message);
                     _instance = new DepotConfigStore();
                 }
             }
@@ -90,7 +91,7 @@ public class DepotConfigStore
             }
             catch (IOException ex)
             {
-                Logger.WriteLine("Failed to save depot configuration: {0}", ex.Message);
+                Log.Error("Failed to save depot configuration: {Error}", ex.Message);
             }
         }
     }

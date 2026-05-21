@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Feil.Models;
 using Feil.Services.Steam;
+using Serilog;
 
 namespace Feil.Services.JobParser;
 
@@ -16,6 +17,7 @@ public sealed class JobArchiveImportService
 
     public async Task<PreparedJobArchive?> PrepareAsync(string zipPath, string installBaseDirectory)
     {
+        Log.Information("Preparing job archive from {ZipPath}", zipPath);
         var parser = new LuaJobParser();
 
         using var archive = ZipFile.OpenRead(zipPath);
@@ -24,6 +26,7 @@ public sealed class JobArchiveImportService
 
         if (luaEntry is null)
         {
+            Log.Warning("Job archive {ZipPath} contains no .lua file", zipPath);
             return null;
         }
 
@@ -35,6 +38,8 @@ public sealed class JobArchiveImportService
         }
 
         var job = parser.Parse(lines);
+        Log.Debug("Parsed job from archive for AppId {AppId} with {DepotCount} depots", job.AppId, job.Depots.Count);
+        
         var gameName = await ResolveGameNameAsync(job.AppId);
         var installDirectory = await ResolveInstallDirectoryAsync(installBaseDirectory, job.AppId, gameName);
         var jobDirectory = GetImportedJobDirectory(installDirectory);
@@ -46,8 +51,9 @@ public sealed class JobArchiveImportService
         {
             ZipFile.ExtractToDirectory(zipPath, temporaryJobDirectory, overwriteFiles: true);
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error(ex, "Failed to extract job archive to {TemporaryJobDirectory}", temporaryJobDirectory);
             DeleteDirectoryBestEffort(temporaryJobDirectory);
             throw;
         }
@@ -78,6 +84,7 @@ public sealed class JobArchiveImportService
     public void Commit(PreparedJobArchive archive)
     {
         ArgumentNullException.ThrowIfNull(archive);
+        Log.Information("Committing job archive {JobDirectory}", archive.JobDirectory);
 
         var metadataDirectory = Path.GetDirectoryName(archive.JobDirectory)!;
         Directory.CreateDirectory(metadataDirectory);
@@ -97,8 +104,9 @@ public sealed class JobArchiveImportService
             Directory.Move(archive.TemporaryJobDirectory, archive.JobDirectory);
             installedNewJobDirectory = true;
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error(ex, "Failed to commit job archive {JobDirectory}, attempting rollback", archive.JobDirectory);
             if (!installedNewJobDirectory && Directory.Exists(archive.JobDirectory))
             {
                 DeleteDirectoryBestEffort(archive.JobDirectory);
@@ -123,7 +131,7 @@ public sealed class JobArchiveImportService
             }
             catch (Exception ex)
             {
-                Trace.TraceWarning($"[Feil] Imported job backup cleanup failed for {backupJobDirectory}: {ex.Message}");
+                Log.Warning(ex, "Imported job backup cleanup failed for {BackupJobDirectory}", backupJobDirectory);
             }
         }
     }
@@ -133,6 +141,7 @@ public sealed class JobArchiveImportService
         int appId,
         string? fallbackDirectoryName = null)
     {
+        Log.Debug("Resolving install directory for App {AppId}", appId);
         var installDirectoryName = await SteamAppInfoService.GetConfiguredInstallDirectoryNameAsync(appId);
         if (string.IsNullOrWhiteSpace(installDirectoryName))
         {
@@ -178,7 +187,7 @@ public sealed class JobArchiveImportService
         }
         catch (Exception ex)
         {
-            Trace.TraceWarning($"[Feil] Could not delete temporary job directory {directory}: {ex.Message}");
+            Log.Warning(ex, "Could not delete temporary job directory {Directory}", directory);
         }
     }
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Feil.Models;
+using Serilog;
 
 namespace Feil.Services.JobParser;
 
@@ -24,6 +25,7 @@ public class LuaJobParser
 
     public DownloadJob Parse(string[] lines)
     {
+        Log.Debug("Parsing Lua job with {LineCount} lines", lines.Length);
         int mainAppId = 0;
         string? mainAppKey = null;
         var depots = new Dictionary<int, DepotInfo>();
@@ -86,6 +88,7 @@ public class LuaJobParser
             }
         }
 
+        Log.Debug("Parsed main AppId {AppId} with {DepotCount} depots and {EntitlementCount} entitlements", mainAppId, depots.Count, entitlements.Count);
         return new DownloadJob
         {
             AppId = mainAppId,
@@ -97,6 +100,7 @@ public class LuaJobParser
 
     public string[] FilterLines(string[] lines, HashSet<int> excludedDepots)
     {
+        Log.Debug("Filtering Lua lines, excluding {DepotCount} depots", excludedDepots?.Count ?? 0);
         if (excludedDepots == null || excludedDepots.Count == 0)
             return lines;
 

@@ -14,6 +14,7 @@ public sealed class CustomUserStatsHandler : ClientMsgHandler
         if (packetMsg.MsgType == EMsg.ClientGetUserStatsResponse)
         {
             var msg = new ClientMsgProtobuf<CMsgClientGetUserStatsResponse>(packetMsg);
+            Serilog.Log.Debug("Intercepted ClientGetUserStatsResponse for GameId {GameId}, EResult {Result}", msg.Body.game_id, msg.Body.eresult);
             OnStatsResponse?.Invoke(packetMsg, msg.Body);
         }
     }

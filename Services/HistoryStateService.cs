@@ -30,8 +30,9 @@ public static class HistoryStateService
                 var state = JsonSerializer.Deserialize(json, HistoryStateJsonContext.Default.PersistedHistoryState);
                 return state?.SchemaVersion == CurrentSchemaVersion ? state : null;
             }
-            catch
+            catch (Exception ex)
             {
+                Serilog.Log.Error(ex, "Failed to load history state");
                 return null;
             }
         }
@@ -66,8 +67,9 @@ public static class HistoryStateService
 
                 File.Move(tempPath, HistoryPath, overwrite: true);
             }
-            catch
+            catch (Exception ex)
             {
+                Serilog.Log.Warning(ex, "Failed to save history state");
                 // Fail silently on save error to avoid crashing the app
             }
         }

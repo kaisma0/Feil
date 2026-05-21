@@ -1,4 +1,5 @@
 using System;
+using Serilog;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -22,12 +23,13 @@ public static class StatsSchemaService
     {
         try
         {
+            Log.Information("Triggering schema generation for app {AppId}", appId);
             await GenerateForAppAsync(appId,
                 showSignInDialog: () => ShowSignInDialogAsync(appId));
         }
         catch (Exception ex)
         {
-            Trace.TraceError($"[Feil] Schema generation trigger failed for {appId}: {ex.Message}");
+            Log.Error(ex, "Schema generation trigger failed for {AppId}", appId);
         }
     }
 
@@ -39,8 +41,7 @@ public static class StatsSchemaService
         var statsDir = ResolveSteamStatsDirectory();
         if (statsDir == null)
         {
-            Trace.TraceWarning(
-                "[Feil] Cannot resolve Steam stats directory — Steam installation not found");
+            Log.Warning("Cannot resolve Steam stats directory — Steam installation not found");
             return;
         }
 
@@ -48,16 +49,17 @@ public static class StatsSchemaService
         var creds = SteamCredentialStore.Load();
         if (creds?.RefreshToken != null)
         {
+            Log.Debug("Checking for saved Steam credentials to attempt silent schema generation...");
             var silentResult = await TrySilentGenerateAsync(
                 appId, statsDir, creds.Username!, creds.RefreshToken);
             if (silentResult)
             {
-                Trace.TraceInformation(
-                    $"[Feil] Schema generated silently for app {appId}");
+                Log.Information("Schema generated silently for app {AppId}", appId);
                 return;
             }
 
             // Token expired — delete stale credentials
+            Log.Warning("Saved RefreshToken expired for app {AppId}, deleting stale credentials", appId);
             SteamCredentialStore.Delete();
         }
 
@@ -65,8 +67,7 @@ public static class StatsSchemaService
         // The dialog handles auth + schema generation internally.
         if (showSignInDialog == null)
         {
-            Trace.TraceWarning(
-                "[Feil] No sign-in dialog available for schema generation");
+            Log.Warning("No sign-in dialog available for schema generation");
             return;
         }
 
@@ -82,12 +83,17 @@ public static class StatsSchemaService
         {
             bool connected = await client.ConnectAndLogOnAsync(
                 username, null, refreshToken);
-            if (!connected) return false;
+            if (!connected)
+            {
+                Log.Warning("Silent logon failed for {Username} on app {AppId}", username, appId);
+                return false;
+            }
 
             return await FetchAndSaveSchemaAsync(appId, statsDir, client);
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error(ex, "Exception during silent schema generation for app {AppId}", appId);
             return false;
         }
         finally
@@ -117,9 +123,7 @@ public static class StatsSchemaService
                 noSchemaCount++;
                 if (noSchemaCount >= MaxNoSchemaStreak)
                 {
-                    Trace.TraceWarning(
-                        $"[Feil] No schema available for app {appId} " +
-                        $"({MaxNoSchemaStreak} consecutive 'no schema' responses)");
+                    Log.Warning("No schema available for app {AppId} ({Streak} consecutive 'no schema' responses)", appId, MaxNoSchemaStreak);
                     return false;
                 }
             }
@@ -127,9 +131,7 @@ public static class StatsSchemaService
             {
                 var accountId = client.CurrentUser?.AccountID ?? 0;
                 SaveSchemaFile(statsDir, appId, response.schema, accountId);
-                Trace.TraceInformation(
-                    $"[Feil] Found schema for app {appId} using owner " +
-                    $"{ownerId} ({i + 1}/{owners.Length})");
+                Log.Information("Found schema for app {AppId} using owner {OwnerId} ({Index}/{Total})", appId, ownerId, i + 1, owners.Length);
                 return true;
             }
             else
@@ -140,8 +142,7 @@ public static class StatsSchemaService
             await Task.Delay(OwnerQueryDelayMs);
         }
 
-        Trace.TraceWarning(
-            $"[Feil] No schema found for app {appId} after checking {owners.Length} owners");
+        Log.Warning("No schema found for app {AppId} after checking {TotalOwners} owners", appId, owners.Length);
         return false;
     }
 
@@ -152,8 +153,7 @@ public static class StatsSchemaService
         // 1. Save the schema file
         string schemaPath = Path.Combine(statsDir, $"UserGameStatsSchema_{appId}.bin");
         File.WriteAllBytes(schemaPath, schemaData);
-        Trace.TraceInformation(
-            $"[Feil] Saved schema to {schemaPath} ({schemaData.Length} bytes)");
+        Log.Information("Saved schema to {SchemaPath} ({Size} bytes)", schemaPath, schemaData.Length);
 
         // 2. Use settings override if configured
         var settings = SettingsService.Load();
@@ -177,8 +177,7 @@ public static class StatsSchemaService
                     0x08, 0x08,                                           
                 ];
                 File.WriteAllBytes(statsFilePath, minimalStats);
-                Trace.TraceInformation(
-                    $"[Feil] Created stats file: {statsFilePath}");
+                Log.Information("Created stats file: {StatsFilePath}", statsFilePath);
             }
         }
     }

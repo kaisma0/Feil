@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SteamKit2;
 using SteamKit2.CDN;
+using Serilog;
 
 namespace Feil.Core;
 
@@ -55,7 +56,7 @@ class Steam3Session
         this.callbacks.Subscribe<SteamClient.DisconnectedCallback>(DisconnectedCallback);
         this.callbacks.Subscribe<SteamUser.LoggedOnCallback>(LogOnCallback);
 
-        Logger.Write("Connecting to Steam3...");
+        Log.Information("Connecting to Steam3...");
         Connect();
     }
 
@@ -119,7 +120,7 @@ class Steam3Session
 
         if (appTokens.AppTokensDenied.Contains(appId))
         {
-            Logger.WriteLine("Insufficient privileges to get access token for app {0}", appId);
+            Log.Warning("Insufficient privileges to get access token for app {AppId}", appId);
         }
 
         foreach (var token_dict in appTokens.AppTokens)
@@ -147,7 +148,7 @@ class Steam3Session
             {
                 var app = app_value.Value;
 
-                Logger.WriteLine("Got AppInfo for {0}", app.ID);
+                Log.Information("Got AppInfo for {AppId}", app.ID);
                 AppInfo[app.ID] = app;
             }
 
@@ -211,11 +212,11 @@ class Steam3Session
 
         if (requestCode == 0)
         {
-            Logger.WriteLine($"No manifest request code was returned for depot {depotId} from app {appId}, manifest {manifestId}");
+            Log.Warning("No manifest request code was returned for depot {DepotId} from app {AppId}, manifest {ManifestId}", depotId, appId, manifestId);
         }
         else
         {
-            Logger.WriteLine($"Got manifest request code for depot {depotId} from app {appId}, manifest {manifestId}, result: {requestCode}");
+            Log.Information("Got manifest request code for depot {DepotId} from app {AppId}, manifest {ManifestId}, result: {RequestCode}", depotId, appId, manifestId, requestCode);
         }
 
         return requestCode;
@@ -234,11 +235,11 @@ class Steam3Session
 
         try
         {
-            DebugLog.WriteLine(nameof(Steam3Session), $"Requesting CDN auth token for {server.Host}");
+            Log.Debug("Requesting CDN auth token for {Host}", server.Host);
 
             var cdnAuth = await steamContent.GetCDNAuthToken(appid, depotid, server.Host);
 
-            Logger.WriteLine($"Got CDN auth token for {server.Host} result: {cdnAuth.Result} (expires {cdnAuth.Expiration})");
+            Log.Information("Got CDN auth token for {Host} result: {Result} (expires {Expiration})", server.Host, cdnAuth.Result, cdnAuth.Expiration);
 
             if (cdnAuth.Result != EResult.OK)
             {
@@ -259,13 +260,20 @@ class Steam3Session
 
     public async Task CheckAppBetaPassword(uint appid, string password)
     {
-        var appPassword = await steamApps.CheckAppBetaPassword(appid, password);
-
-        Logger.WriteLine("Retrieved {0} beta keys with result: {1}", appPassword.BetaPasswords.Count, appPassword.Result);
-
-        foreach (var entry in appPassword.BetaPasswords)
+        try
         {
-            AppBetaPasswords[entry.Key] = entry.Value;
+            var appPassword = await steamApps.CheckAppBetaPassword(appid, password);
+
+            Log.Information("Retrieved {Count} beta keys with result: {Result}", appPassword.BetaPasswords.Count, appPassword.Result);
+
+            foreach (var entry in appPassword.BetaPasswords)
+            {
+                AppBetaPasswords[entry.Key] = entry.Value;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to check beta password for app {AppId}", appid);
         }
     }
 
@@ -283,11 +291,19 @@ class Steam3Session
             accessToken = ContentDownloader.Config.AppToken;
         }
 
-        var privateBeta = await steamApps.PICSGetPrivateBeta(appid, accessToken, branch, branchPassword);
+        try
+        {
+            var privateBeta = await steamApps.PICSGetPrivateBeta(appid, accessToken, branch, branchPassword);
 
-        Logger.WriteLine($"Retrieved private beta depot section for {appid} with result: {privateBeta.Result}");
+            Log.Information("Retrieved private beta depot section for {AppId} with result: {Result}", appid, privateBeta.Result);
 
-        return privateBeta.DepotSection;
+            return privateBeta.DepotSection;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to get private beta depot section for app {AppId}", appid);
+            return new KeyValue();
+        }
     }
 
     private void ResetConnectionFlags()
@@ -341,13 +357,13 @@ class Steam3Session
 
     private void ConnectedCallback(SteamClient.ConnectedCallback connected)
     {
-        Logger.WriteLine(" Done!");
+        Log.Information("Connected to Steam3!");
         bConnecting = false;
 
         // Update our tracking so that we don't time out, even if we need to reconnect multiple times.
         connectionBackoff = 0;
 
-        Logger.Write("Logging anonymously into Steam3...");
+        Log.Information("Logging anonymously into Steam3...");
         steamUser.LogOnAnonymous();
     }
 
@@ -355,19 +371,19 @@ class Steam3Session
     {
         bDidDisconnect = true;
 
-        DebugLog.WriteLine(nameof(Steam3Session), $"Disconnected: bIsConnectionRecovery = {bIsConnectionRecovery}, UserInitiated = {disconnected.UserInitiated}, bExpectingDisconnectRemote = {bExpectingDisconnectRemote}");
+        Log.Debug("Disconnected: bIsConnectionRecovery = {IsConnectionRecovery}, UserInitiated = {UserInitiated}, bExpectingDisconnectRemote = {ExpectingDisconnectRemote}", bIsConnectionRecovery, disconnected.UserInitiated, bExpectingDisconnectRemote);
 
         // When recovering the connection, we want to reconnect even if the remote disconnects us
         if (!bIsConnectionRecovery && (disconnected.UserInitiated || bExpectingDisconnectRemote))
         {
-            Logger.WriteLine("Disconnected from Steam");
+            Log.Information("Disconnected from Steam");
 
             // Any operations outstanding need to be aborted
             bAborted = true;
         }
         else if (connectionBackoff >= 10)
         {
-            Logger.WriteLine("Could not connect to Steam after 10 tries");
+            Log.Error("Could not connect to Steam after 10 tries");
             Abort(false);
         }
         else if (!bAborted)
@@ -376,11 +392,11 @@ class Steam3Session
 
             if (bConnecting)
             {
-                Logger.WriteLine($"Connection to Steam failed. Trying again (#{connectionBackoff})...");
+                Log.Warning("Connection to Steam failed. Trying again (#{ConnectionBackoff})...", connectionBackoff);
             }
             else
             {
-                Logger.WriteLine("Lost connection to Steam. Reconnecting");
+                Log.Warning("Lost connection to Steam. Reconnecting...");
             }
 
             Thread.Sleep(1000 * connectionBackoff);
@@ -395,7 +411,7 @@ class Steam3Session
     {
         if (loggedOn.Result == EResult.TryAnotherCM)
         {
-            Logger.Write("Retrying Steam3 connection (TryAnotherCM)...");
+            Log.Information("Retrying Steam3 connection (TryAnotherCM)...");
 
             Reconnect();
 
@@ -404,7 +420,7 @@ class Steam3Session
 
         if (loggedOn.Result == EResult.ServiceUnavailable)
         {
-            Logger.WriteLine("Unable to connect to Steam3: {0}", loggedOn.Result);
+            Log.Error("Unable to connect to Steam3: {Result}", loggedOn.Result);
             Abort(false);
 
             return;
@@ -412,20 +428,20 @@ class Steam3Session
 
         if (loggedOn.Result != EResult.OK)
         {
-            Logger.WriteLine("Unable to connect to Steam3: {0}", loggedOn.Result);
+            Log.Error("Unable to connect to Steam3: {Result}", loggedOn.Result);
             Abort();
 
             return;
         }
 
-        Logger.WriteLine(" Done!");
+        Log.Information("Logged onto Steam3 successfully!");
 
         this.seq++;
         IsLoggedOn = true;
 
         if (ContentDownloader.Config.CellID == 0)
         {
-            Logger.WriteLine("Using Steam3 suggested CellID: " + loggedOn.CellID);
+            Log.Information("Using Steam3 suggested CellID: {CellID}", loggedOn.CellID);
             ContentDownloader.Config.CellID = (int)loggedOn.CellID;
         }
     }

@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using Serilog;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -83,7 +84,7 @@ static class Util
             }
             else if (badHashWarning)
             {
-                Logger.WriteLine("Manifest {0} on disk did not match the expected checksum.", manifestId);
+                Log.Warning("Manifest {ManifestId} on disk did not match the expected checksum.", manifestId);
             }
         }
 
@@ -112,7 +113,7 @@ static class Util
 
                 if (badHashWarning)
                 {
-                    Logger.WriteLine("Manifest {0} on disk did not match the expected checksum.", manifestId);
+                    Log.Warning("Manifest {ManifestId} on disk did not match the expected checksum.", manifestId);
                 }
             }
 
@@ -134,8 +135,9 @@ static class Util
             File.WriteAllBytes(filename + ".sha", FileSHAHash(filename));
             return true; // If serialization completes without throwing an exception, return true
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Log.Error(ex, "Failed to save manifest to {Directory}", directory);
             return false; // Return false if an error occurs
         }
     }

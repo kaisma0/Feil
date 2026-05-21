@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using Serilog;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -49,17 +50,17 @@ sealed class AccountSettingsStore
                 }
                 catch (IOException ex)
                 {
-                    Logger.WriteLine("Failed to load account settings: {0}", ex.Message);
+                    Log.Error("Failed to load account settings: {Error}", ex.Message);
                     Instance = new AccountSettingsStore();
                 }
                 catch (InvalidDataException ex)
                 {
-                    Logger.WriteLine("Account settings file is invalid: {0}", ex.Message);
+                    Log.Error("Account settings file is invalid: {Error}", ex.Message);
                     Instance = new AccountSettingsStore();
                 }
                 catch (ProtoException ex)
                 {
-                    Logger.WriteLine("Account settings deserialization failed: {0}", ex.Message);
+                    Log.Error("Account settings deserialization failed: {Error}", ex.Message);
                     Instance = new AccountSettingsStore();
                 }
             }
@@ -89,7 +90,7 @@ sealed class AccountSettingsStore
             }
             catch (IOException ex)
             {
-                Logger.WriteLine("Failed to save account settings: {0}", ex.Message);
+                Log.Error("Failed to save account settings: {Error}", ex.Message);
             }
         }
     }

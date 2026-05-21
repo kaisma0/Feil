@@ -84,6 +84,7 @@ public partial class HistoryPageViewModel : ViewModelBase
     [RelayCommand]
     private void ClearHistory()
     {
+        Serilog.Log.Information("User requested to clear all history");
         Entries.Clear();
     }
 
@@ -95,6 +96,7 @@ public partial class HistoryPageViewModel : ViewModelBase
             return;
         }
 
+        Serilog.Log.Information("User requested to verify history entry for AppId {AppId}", entry.AppId);
         VerifyRequested?.Invoke(entry.Entry);
     }
 
@@ -106,6 +108,7 @@ public partial class HistoryPageViewModel : ViewModelBase
             return;
         }
 
+        Serilog.Log.Information("User requested to retry history entry for AppId {AppId}", entry.AppId);
         RetryRequested?.Invoke(entry.Entry);
     }
 
@@ -113,6 +116,7 @@ public partial class HistoryPageViewModel : ViewModelBase
     private void RemoveEntry(HistoryEntryViewModel? entry)
     {
         if (entry is null) return;
+        Serilog.Log.Information("User requested to remove history entry for AppId {AppId}", entry.AppId);
 
         if (OperatingSystem.IsLinux() && entry.IsSuccess)
         {
@@ -130,6 +134,7 @@ public partial class HistoryPageViewModel : ViewModelBase
     private void AddOnline(HistoryEntryViewModel? entry)
     {
         if (entry is null || !entry.IsSuccess) return;
+        Serilog.Log.Information("User requested to add online fix to SLSsteam config for AppId {AppId}", entry.AppId);
 
         if (OperatingSystem.IsLinux())
         {
@@ -145,6 +150,7 @@ public partial class HistoryPageViewModel : ViewModelBase
     private void GenerateAchievements(HistoryEntryViewModel? entry)
     {
         if (entry is null) return;
+        Serilog.Log.Information("User requested to generate achievements for AppId {AppId}", entry.AppId);
         _ = StatsSchemaService.TriggerAsync((uint)entry.AppId);
     }
 }

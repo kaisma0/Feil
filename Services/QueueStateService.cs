@@ -27,8 +27,9 @@ public static class QueueStateService
             var state = JsonSerializer.Deserialize(json, QueueStateJsonContext.Default.PersistedQueueState);
             return state?.SchemaVersion == CurrentSchemaVersion ? state : null;
         }
-        catch
+        catch (Exception ex)
         {
+            Serilog.Log.Error(ex, "Failed to load queue state");
             return null;
         }
     }
@@ -56,6 +57,13 @@ public static class QueueStateService
             stream.Flush(flushToDisk: true);
         }
 
-        File.Move(tempPath, QueuePath, overwrite: true);
+        try
+        {
+            File.Move(tempPath, QueuePath, overwrite: true);
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Warning(ex, "Failed to save queue state");
+        }
     }
 }

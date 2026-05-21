@@ -93,6 +93,7 @@ public partial class SteamSignInDialogViewModel : ObservableObject, IAuthenticat
     {
         if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
         {
+            Serilog.Log.Warning("User attempted to sign in to Steam without providing credentials");
             ErrorMessage = "Please enter your Steam username and password.";
             return;
         }
@@ -110,6 +111,7 @@ public partial class SteamSignInDialogViewModel : ObservableObject, IAuthenticat
 
             if (!connected)
             {
+                Serilog.Log.Warning("Steam authentication failed for user {Username}", Username.Trim());
                 CurrentStep = SignInStep.Credentials;
                 ErrorMessage = "Authentication failed. Check your credentials and try again.";
                 _client.Dispose();
@@ -125,6 +127,7 @@ public partial class SteamSignInDialogViewModel : ObservableObject, IAuthenticat
                     Username = Username.Trim(),
                     RefreshToken = _client.ReceivedRefreshToken,
                 });
+                Serilog.Log.Information("Saved Steam credentials for user {Username}", Username.Trim());
             }
 
             // Now fetch the schema
@@ -143,6 +146,7 @@ public partial class SteamSignInDialogViewModel : ObservableObject, IAuthenticat
     private void SubmitGuardCode()
     {
         if (string.IsNullOrWhiteSpace(GuardCode) || _guardCodeTcs == null) return;
+        Serilog.Log.Information("User submitted Steam Guard code");
 
         _guardCodeTcs.TrySetResult(GuardCode.Trim().ToUpperInvariant());
         CurrentStep = SignInStep.Connecting;
@@ -152,6 +156,7 @@ public partial class SteamSignInDialogViewModel : ObservableObject, IAuthenticat
     [RelayCommand]
     private void Cancel()
     {
+        Serilog.Log.Information("User cancelled Steam sign-in");
         _guardCodeTcs?.TrySetCanceled();
         _client?.Dispose();
         _client = null;
@@ -199,11 +204,13 @@ public partial class SteamSignInDialogViewModel : ObservableObject, IAuthenticat
 
         if (found)
         {
+            Serilog.Log.Information("Successfully fetched achievement schema for AppId {AppId}", _appId);
             StatusMessage = "Achievement schema generated successfully!";
             ErrorMessage = null;
         }
         else
         {
+            Serilog.Log.Warning("No achievement schema found for AppId {AppId}", _appId);
             StatusMessage = "Schema generation complete.";
             ErrorMessage = $"No achievement schema found for app {_appId}.";
         }

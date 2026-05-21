@@ -1,4 +1,5 @@
 using System;
+using Serilog;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,7 +33,11 @@ public class SLSsteamService
             var editor = new YamlLineEditor(File.ReadAllLines(_configFilePath).ToList(), Indent);
             return editor.GetValue(path);
         }
-        catch { return null; }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to get config value for path {Path}", string.Join(".", path));
+            return null;
+        }
     }
 
     // Edits the SLSsteam config in-place while preserving existing comments and layout.
@@ -53,13 +58,16 @@ public class SLSsteamService
             };
 
             if (ok && editor.Modified)
+            {
                 File.WriteAllLines(_configFilePath, lines);
+                Log.Information("Modified SLSsteam config at {Path}: {Action}", string.Join(".", path), action);
+            }
 
             return ok;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SLSsteamService] Failed to modify config: {ex.Message}");
+            Log.Error(ex, "Failed to modify config");
             return false;
         }
     }

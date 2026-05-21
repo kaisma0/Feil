@@ -1,4 +1,5 @@
 using System;
+using Serilog;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -29,10 +30,14 @@ public static class SteamCredentialStore
             var json = File.ReadAllText(CredentialPath);
             var creds = JsonSerializer.Deserialize(json, SteamCredentialsJsonContext.Default.SteamCredentials);
             // Only return if we have at least a username
-            return string.IsNullOrWhiteSpace(creds?.Username) ? null : creds;
+            if (string.IsNullOrWhiteSpace(creds?.Username)) return null;
+            
+            Log.Information("Successfully loaded Steam credentials for user {Username}", creds.Username);
+            return creds;
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error(ex, "Failed to load Steam credentials");
             return null;
         }
     }
@@ -43,12 +48,14 @@ public static class SteamCredentialStore
         {
             var dir = Path.GetDirectoryName(CredentialPath);
             if (dir != null) Directory.CreateDirectory(dir);
+            
+            Log.Information("Saving Steam credentials for user {Username}", credentials.Username);
             var json = JsonSerializer.Serialize(credentials, SteamCredentialsJsonContext.Default.SteamCredentials);
             File.WriteAllText(CredentialPath, json);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Trace.TraceWarning($"[Feil] Could not save Steam credentials: {ex.Message}");
+            Log.Warning(ex, "Could not save Steam credentials");
         }
     }
 
@@ -56,11 +63,12 @@ public static class SteamCredentialStore
     {
         try
         {
+            Log.Information("Deleting saved Steam credentials.");
             if (File.Exists(CredentialPath)) File.Delete(CredentialPath);
         }
-        catch
+        catch (Exception ex)
         {
-            // Best-effort cleanup
+            Log.Warning(ex, "Failed to delete Steam credentials");
         }
     }
 }

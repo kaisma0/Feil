@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Feil.Services.SLSsteam;
 using System;
+using Serilog;
 
 namespace Feil.ViewModels.Pages;
 
@@ -55,6 +56,7 @@ public partial class SLSsteamPageViewModel : ViewModelBase
     private void UpdateSls()
     {
         if (!IsSlsInstalled) return;
+        Serilog.Log.Information("User requested to update SLSsteam via terminal script");
 
         try
         {
@@ -89,7 +91,7 @@ public partial class SLSsteamPageViewModel : ViewModelBase
         catch (Exception ex)
         {
             // Log or handle error if needed
-            Console.WriteLine($"Failed to launch terminal: {ex.Message}");
+            Log.Error(ex, "Failed to launch terminal for SLS update");
         }
     }
 
@@ -97,6 +99,7 @@ public partial class SLSsteamPageViewModel : ViewModelBase
     private void Save()
     {
         if (!IsSlsInstalled) return;
+        Serilog.Log.Information("User requested to save SLSsteam settings page");
 
         _slsService.ModifyConfig(new[] { "IdleStatus", "AppId" }, "set", string.IsNullOrWhiteSpace(IdleStatusAppId) ? "0" : IdleStatusAppId);
         _slsService.ModifyConfig(new[] { "IdleStatus", "Title" }, "set", string.IsNullOrWhiteSpace(IdleStatusTitle) ? "\"\"" : $"\"{IdleStatusTitle}\"");

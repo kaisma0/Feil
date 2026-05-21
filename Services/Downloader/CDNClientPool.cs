@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SteamKit2.CDN;
+using Serilog;
 
 namespace Feil.Core;
 
@@ -32,6 +33,7 @@ class CDNClientPool
 
     public async Task UpdateServerList()
     {
+        Log.Information("Updating CDN server list for app {AppId}", appId);
         var rawServers = await this.steamSession.steamContent.GetServersForSteamPipe((uint?)ContentDownloader.Config.CellID);
 
         ProxyServer = rawServers.Where(x => x.UseAsProxy).FirstOrDefault();
@@ -58,7 +60,11 @@ class CDNClientPool
         }
 
         if (list.Count == 0)
-            throw new Exception("Failed to retrieve any download servers.");
+        {
+            var ex = new Exception("Failed to retrieve any download servers.");
+            Log.Error(ex, "Could not get any valid servers from SteamPipe for app {AppId}", appId);
+            throw ex;
+        }
 
         Interlocked.Exchange(ref _nextServer, 0);
         servers = list.ToArray();
@@ -66,6 +72,7 @@ class CDNClientPool
 
     public Server GetConnection()
     {
+        Log.Debug("Requesting CDN connection");
         var snap = servers;
 
         if (snap.Length == 0)
@@ -83,6 +90,8 @@ class CDNClientPool
 
     public void ReturnBrokenConnection(Server server)
     {
+
+        Log.Warning("Returning broken connection for server {Host}", server.Host);
         if (server == null) return;
 
         // Increment penalty for this host so it sorts lower on the next server list refresh.

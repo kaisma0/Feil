@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace Feil.Core;
 
@@ -14,6 +15,7 @@ static class HttpClientFactory
 {
     public static HttpClient CreateHttpClient()
     {
+        Log.Debug("Creating new HttpClient instance");
         var client = new HttpClient(new SocketsHttpHandler
         {
             ConnectCallback = IPv4ConnectAsync
@@ -40,8 +42,9 @@ static class HttpClientFactory
             await socket.ConnectAsync(context.DnsEndPoint, cancellationToken).ConfigureAwait(false);
             return new NetworkStream(socket, ownsSocket: true);
         }
-        catch
+        catch (System.Exception ex)
         {
+            Log.Warning(ex, "Failed to connect to {DnsEndPoint} via IPv4", context.DnsEndPoint);
             socket.Dispose();
             throw;
         }

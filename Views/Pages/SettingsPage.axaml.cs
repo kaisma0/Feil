@@ -14,6 +14,7 @@ public partial class SettingsPage : UserControl
 
     private async void OnBrowseInstallPathClick(object? sender, RoutedEventArgs e)
     {
+        Serilog.Log.Information("User clicked to browse for install path");
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel?.StorageProvider is null) return;
 

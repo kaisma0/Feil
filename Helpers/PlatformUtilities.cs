@@ -16,13 +16,20 @@ static class PlatformUtilities
 
         const UnixFileMode ModeExecute = UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute;
 
-        var mode = File.GetUnixFileMode(path);
-        var hasExecuteMask = (mode & ModeExecute) == ModeExecute;
-        if (hasExecuteMask != value)
+        try
         {
-            File.SetUnixFileMode(path, value
-                ? mode | ModeExecute
-                : mode & ~ModeExecute);
+            var mode = File.GetUnixFileMode(path);
+            var hasExecuteMask = (mode & ModeExecute) == ModeExecute;
+            if (hasExecuteMask != value)
+            {
+                File.SetUnixFileMode(path, value
+                    ? mode | ModeExecute
+                    : mode & ~ModeExecute);
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Serilog.Log.Error(ex, "Failed to set executable permission for {Path}", path);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Serilog;
 
 namespace Feil.Services;
 
@@ -9,8 +10,10 @@ public static class AppEnvironmentService
 
     public static string GetAppDataFolder()
     {
-        return Path.Combine(
+        var path = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             AppFolderName);
+        Log.Debug("Resolved AppData folder to: {Path}", path);
+        return path;
     }
 }

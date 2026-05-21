@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Feil.Core;
+using Serilog;
 
 namespace Feil.Services.Steam;
 
@@ -36,6 +37,7 @@ public static class SteamAppImageService
 
     private static async Task<Bitmap?> DownloadBitmapAsync(string imageUrl)
     {
+        Log.Debug("Downloading game image from {ImageUrl}", imageUrl);
         try
         {
             using var client = HttpClientFactory.CreateHttpClient();
@@ -44,6 +46,7 @@ public static class SteamAppImageService
             using var response = await client.GetAsync(imageUrl, HttpCompletionOption.ResponseHeadersRead);
             if (!response.IsSuccessStatusCode)
             {
+                Log.Warning("Failed to download image from {ImageUrl}. Status Code: {StatusCode}", imageUrl, response.StatusCode);
                 return null;
             }
 
@@ -52,10 +55,12 @@ public static class SteamAppImageService
             await responseStream.CopyToAsync(memoryStream);
             memoryStream.Position = 0;
 
+            Log.Debug("Successfully downloaded game image from {ImageUrl}", imageUrl);
             return new Bitmap(memoryStream);
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error(ex, "Exception while downloading game image from {ImageUrl}", imageUrl);
             return null;
         }
     }

@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Feil.ViewModels;
 using Feil.Views;
+using Serilog;
 
 namespace Feil;
 
@@ -17,6 +18,7 @@ public partial class App : Application
 
     public override void Initialize()
     {
+        Log.Debug("Avalonia Application Initialization Started.");
         AvaloniaXamlLoader.Load(this);
     }
 
@@ -45,11 +47,16 @@ public partial class App : Application
 
             desktop.ShutdownRequested += (_, _) =>
             {
+                Log.Information("Desktop shutdown requested. Cleaning up...");
                 mainWindow.IsExitRequested = true;
                 _viewModel.Dispose();
             };
 
-            desktop.Exit += (_, _) => DisposeTrayIcon();
+            desktop.Exit += (_, _) =>
+            {
+                Log.Information("Desktop exit triggered. Disposing tray icon...");
+                DisposeTrayIcon();
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Feil.Models;
+using Serilog;
 
 namespace Feil.Services;
 
@@ -16,12 +17,14 @@ public static class SettingsService
 
     public static AppSettings Load()
     {
+        Log.Information("Loading AppSettings.");
         var settings = LoadFromDisk();
         settings.InstallPath = NormalizeInstallPath(settings.InstallPath);
         var startupState = StartupLaunchService.TryGetState();
 
         if (startupState.IsSuccess && settings.LaunchOnStartup != startupState.IsEnabled)
         {
+            Log.Debug("Startup state mismatch detected. Syncing LaunchOnStartup to {IsEnabled}", startupState.IsEnabled);
             settings.LaunchOnStartup = startupState.IsEnabled;
             TryWrite(settings);
         }
@@ -31,12 +34,14 @@ public static class SettingsService
 
     public static SettingsSaveResult Save(AppSettings settings)
     {
+        Log.Information("Saving AppSettings.");
         var existingSettings = LoadFromDisk();
         var persistedSettings = Clone(settings);
         var startupResult = StartupLaunchService.SetEnabled(persistedSettings.LaunchOnStartup);
 
         if (!startupResult.IsSuccess)
         {
+            Log.Warning("Failed to update system startup registration: {ErrorMessage}", startupResult.ErrorMessage);
             var startupState = StartupLaunchService.TryGetState();
             persistedSettings.LaunchOnStartup = startupState.IsSuccess
                 ? startupState.IsEnabled
@@ -46,9 +51,11 @@ public static class SettingsService
         try
         {
             Write(persistedSettings);
+            Log.Debug("AppSettings successfully written to disk.");
         }
         catch (Exception ex)
         {
+            Log.Error(ex, "Failed to write AppSettings to disk.");
             var message = startupResult.IsSuccess
                 ? $"Could not save settings: {ex.Message}"
                 : $"Could not save settings, and launch on startup could not be updated: {startupResult.ErrorMessage}";
@@ -72,13 +79,18 @@ public static class SettingsService
     {
         try
         {
-            if (!File.Exists(ConfigPath)) return new AppSettings();
+            if (!File.Exists(ConfigPath))
+            {
+                Log.Debug("Settings file not found at {ConfigPath}. Using defaults.", ConfigPath);
+                return new AppSettings();
+            }
             var json = File.ReadAllText(ConfigPath);
             return JsonSerializer.Deserialize(json, SettingsJsonContext.Default.AppSettings)
                    ?? new AppSettings();
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error(ex, "Corrupted or unreadable settings file at {ConfigPath}. Returning defaults.", ConfigPath);
             // Corrupted or unreadable file — return defaults silently.
             return new AppSettings();
         }
@@ -90,9 +102,17 @@ public static class SettingsService
         {
             Write(settings);
         }
-        catch
+        catch (Exception ex)
         {
-            // Keep runtime settings usable even if the config file cannot be updated.
+            Log.Warning(ex, "Silently handled failure to save config updates.");
+            try
+            {
+                Write(settings);
+            }
+            catch
+            {
+                // Keep runtime settings usable even if the config file cannot be updated.
+            }
         }
     }
 

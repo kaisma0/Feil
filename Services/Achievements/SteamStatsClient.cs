@@ -1,4 +1,5 @@
 using System;
+using Serilog;
 using System.Threading;
 using System.Threading.Tasks;
 using SteamKit2;
@@ -62,6 +63,7 @@ public sealed class SteamStatsClient : IDisposable
         string? refreshToken,
         IAuthenticator? authenticator = null)
     {
+        Log.Debug("Starting ConnectAndLogOnAsync for user {Username}", username);
         _username       = username;
         _password       = password;
         _refreshToken   = refreshToken;
@@ -80,6 +82,7 @@ public sealed class SteamStatsClient : IDisposable
     public async Task<CMsgClientGetUserStatsResponse?> GetStatsSchemaAsync(
         uint gameId, ulong ownerId)
     {
+        Log.Debug("Sending ClientGetUserStats request for GameId {GameId} to owner {OwnerId}", gameId, ownerId);
         _statsTcs = new TaskCompletionSource<CMsgClientGetUserStatsResponse>();
 
         var request = new ClientMsgProtobuf<CMsgClientGetUserStats>(EMsg.ClientGetUserStats);
@@ -95,7 +98,13 @@ public sealed class SteamStatsClient : IDisposable
         var timeoutTask   = Task.Delay(TimeSpan.FromSeconds(5));
         var completedTask = await Task.WhenAny(_statsTcs.Task, timeoutTask);
 
-        return completedTask == timeoutTask ? null : await _statsTcs.Task;
+        if (completedTask == timeoutTask)
+        {
+            Log.Warning("Timed out waiting for stats schema response for GameId {GameId} from owner {OwnerId}", gameId, ownerId);
+            return null;
+        }
+
+        return await _statsTcs.Task;
     }
 
     public void Disconnect()
@@ -114,6 +123,7 @@ public sealed class SteamStatsClient : IDisposable
 
     private async void OnConnected(SteamClient.ConnectedCallback _)
     {
+        Log.Information("Connected to Steam. Proceeding with logon.");
         if (_refreshToken != null)
         {
             _steamUser.LogOn(new SteamUser.LogOnDetails
@@ -150,14 +160,14 @@ public sealed class SteamStatsClient : IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Trace.TraceError(
-                $"[Feil] Steam authentication failed: {ex.Message}");
+            Log.Error(ex, "Steam authentication failed");
             _logonTcs?.TrySetResult(false);
         }
     }
 
     private void OnDisconnected(SteamClient.DisconnectedCallback _)
     {
+        Log.Information("Disconnected from Steam. (Retrying: {IsRetrying})", _isRetryingAuth);
         if (_isRetryingAuth)
         {
             _steamClient.Connect();
@@ -172,6 +182,7 @@ public sealed class SteamStatsClient : IDisposable
     {
         if (callback.Result == EResult.OK)
         {
+            Log.Information("Successfully logged on to Steam.");
             _isRetryingAuth = false;
             _logonTcs?.TrySetResult(true);
         }
@@ -186,8 +197,7 @@ public sealed class SteamStatsClient : IDisposable
         }
         else
         {
-            System.Diagnostics.Trace.TraceError(
-                $"[Feil] Steam logon failed: {callback.Result} / {callback.ExtendedResult}");
+            Log.Error("Steam logon failed: {Result} / {ExtendedResult}", callback.Result, callback.ExtendedResult);
             _isRetryingAuth = false;
             _logonTcs?.TrySetResult(false);
         }

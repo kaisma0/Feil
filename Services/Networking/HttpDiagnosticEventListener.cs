@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics.Tracing;
 using System.Text;
+using Serilog;
 
 namespace Feil.Core;
 
@@ -37,6 +38,6 @@ internal sealed class HttpDiagnosticEventListener : EventListener
         }
 
         sb.Append(')');
-        Logger.WriteLine(sb.ToString());
+        Log.Debug(sb.ToString());
     }
 }

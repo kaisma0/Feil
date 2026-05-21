@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Feil.Core;
+using Serilog;
 
 namespace Feil.Services.Steam;
 
@@ -28,6 +29,7 @@ public static class SteamAppInfoService
             return cachedMetadata;
         }
 
+        Log.Debug("Requesting app details for AppId: {AppId}", appId);
         try
         {
             using var client = HttpClientFactory.CreateHttpClient();
@@ -40,13 +42,22 @@ public static class SteamAppInfoService
             var root = document.RootElement;
 
             if (!root.TryGetProperty(appId.ToString(), out var appElement))
+            {
+                Log.Warning("AppId {AppId} not found in response", appId);
                 return null;
+            }
 
             if (!appElement.TryGetProperty("success", out var successElement) || !successElement.GetBoolean())
+            {
+                Log.Warning("AppId {AppId} details request was not successful", appId);
                 return null;
+            }
 
             if (!appElement.TryGetProperty("data", out var dataElement))
+            {
+                Log.Warning("AppId {AppId} details response missing data", appId);
                 return null;
+            }
 
             string? name = null;
             if (dataElement.TryGetProperty("name", out var nameElement))
@@ -57,17 +68,22 @@ public static class SteamAppInfoService
                 headerImageUrl = headerImageElement.GetString();
 
             if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(headerImageUrl))
+            {
+                Log.Warning("AppId {AppId} missing name and header image", appId);
                 return null;
+            }
 
             var metadata = new SteamAppMetadata(
                 string.IsNullOrWhiteSpace(name) ? null : name,
                 string.IsNullOrWhiteSpace(headerImageUrl) ? null : headerImageUrl);
 
+            Log.Information("Successfully retrieved app details for AppId: {AppId} ({AppName})", appId, name);
             _metadataCache[appId] = metadata;
             return metadata;
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error(ex, "Failed to retrieve app details for AppId: {AppId}", appId);
             // Ignore errors (e.g. network failure, rate limiting) and return null
         }
 
@@ -79,6 +95,7 @@ public static class SteamAppInfoService
         if (_steamCmdCache.TryGetValue(appId, out var cached))
             return cached;
 
+        Log.Debug("Requesting SteamCMD app info for AppId: {AppId}", appId);
         try
         {
             using var client = HttpClientFactory.CreateHttpClient();
@@ -92,10 +109,15 @@ public static class SteamAppInfoService
             {
                 var clone = appElement.Clone();
                 _steamCmdCache[appId] = clone;
+                Log.Information("Successfully retrieved SteamCMD app info for AppId: {AppId}", appId);
                 return clone;
             }
+            Log.Warning("SteamCMD app info for AppId: {AppId} not found in response", appId);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to retrieve SteamCMD app info for AppId: {AppId}", appId);
+        }
 
         return null;
     }

@@ -1,4 +1,5 @@
 using System;
+using Serilog;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -74,7 +75,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
         // isn't silently swallowed by the GC finaliser.
         var queueTask = ProcessQueueAsync();
         _ = queueTask.ContinueWith(
-            t => System.Diagnostics.Trace.TraceError($"[Feil] ProcessQueueAsync terminated unexpectedly: {t.Exception}"),
+            t => Log.Error(t.Exception, "ProcessQueueAsync terminated unexpectedly"),
             TaskContinuationOptions.OnlyOnFaulted);
     }
 
@@ -111,12 +112,14 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
             _downloadService.Pause();
             _pausedActiveJobStatus = ActiveJob.Status;
             ActiveJob.Status = DownloadJobStatus.Paused;
+            Log.Information("Paused active job {AppId}", ActiveJob.AppId);
         }
         else if (ActiveJob.Status == DownloadJobStatus.Paused)
         {
             _downloadService.Resume();
             ActiveJob.Status = _pausedActiveJobStatus ?? ActiveJob.GetInitialRunningStatus();
             _pausedActiveJobStatus = null;
+            Log.Information("Resumed active job {AppId}", ActiveJob.AppId);
         }
 
         PersistQueueState();
@@ -131,6 +134,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
 
         MutateQueueState(() =>
         {
+            Log.Information("Cancelled active job {AppId}", cancelledJob.AppId);
             cancelledJob.Status = DownloadJobStatus.Cancelled;
 
             var ctsToCancell = _activeJobCts;
@@ -213,6 +217,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
 
             try
             {
+                Log.Information("Processing job archive {ZipPath}", zipPath);
                 importedJob = await _jobArchiveImporter.PrepareAsync(zipPath, GetInstallBaseDirectory());
                 if (importedJob is null)
                 {
@@ -226,6 +231,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
 
                 if (!confirmed)
                 {
+                    Log.Information("User cancelled depot selection for {ZipPath}", zipPath);
                     continue;
                 }
 
@@ -238,10 +244,11 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
                     importedJob.GameName);
 
                 EnqueueJob(newJob);
+                Log.Information("Enqueued job for AppId {AppId} from {ZipPath}", newJob.AppId, zipPath);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError($"[Feil] Error processing zip file {zipPath}: {ex}");
+                Log.Error(ex, "Error processing zip file {ZipPath}", zipPath);
             }
             finally
             {
@@ -292,6 +299,8 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
             return;
         }
 
+        Log.Information("Enqueueing {OperationName} for AppId {AppId}", operationName, entry.AppId);
+
         var source = ResolveHistoryJobSource(entry, operationName);
         if (source is null)
         {
@@ -329,7 +338,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError($"[Feil] Failed to enqueue history {operationName}: {ex}");
+                Log.Error(ex, "Failed to enqueue history {OperationName}", operationName);
             }
         });
     }
@@ -357,7 +366,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Trace.TraceError($"[Feil] Failed to resolve job from history for {operationName}: {ex}");
+            Log.Error(ex, "Failed to resolve job from history for {OperationName}", operationName);
             return null;
         }
     }
@@ -563,7 +572,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
             {
                 if (_isDisposed) break;
 
-                System.Diagnostics.Trace.TraceError($"[Feil] Queue loop error: {ex}");
+                Log.Error(ex, "Queue loop error");
                 if (ActiveJob != null && IsRunnableStatus(ActiveJob.Status))
                 {
                     var jobToFail = ActiveJob;
@@ -793,7 +802,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Trace.TraceError($"[Feil] Failed to persist queue state: {ex}");
+            Log.Error(ex, "Failed to persist queue state");
         }
     }
 

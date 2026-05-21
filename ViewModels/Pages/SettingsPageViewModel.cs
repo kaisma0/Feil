@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Feil.Models;
 using Feil.Services;
 using Velopack;
+using Serilog;
 
 namespace Feil.ViewModels.Pages;
 
@@ -36,6 +37,7 @@ public partial class SettingsPageViewModel : ViewModelBase
     private void Save()
     {
         var result = SettingsService.Save(ToAppSettings());
+        Log.Information("Settings saved with outcome {Outcome}", result.Outcome);
         LoadFrom(result.PersistedSettings);
         ApplySaveStatus(result);
     }
@@ -89,6 +91,7 @@ public partial class SettingsPageViewModel : ViewModelBase
     [RelayCommand]
     private void ResetDefaults()
     {
+        Log.Information("User reset settings to defaults");
         InstallPath = DefaultInstallPathService.GetDefaultInstallPath();
         LaunchOnStartup = false;
         StartMinimised = false;
@@ -147,6 +150,7 @@ public partial class SettingsPageViewModel : ViewModelBase
 
         if (UpdateAvailable && _pendingUpdate != null)
         {
+            Log.Information("User requested to download and apply update {Version}", _pendingUpdate.TargetFullRelease.Version);
             // Already checked, now we download and apply
             IsDownloadingUpdate = true;
             UpdateProgress = 0;
@@ -165,6 +169,7 @@ public partial class SettingsPageViewModel : ViewModelBase
             return;
         }
 
+        Log.Information("User manually requested an update check");
         IsCheckingForUpdates = true;
         UpdateStatusMessage = "Checking for updates...";
         try

@@ -1,6 +1,7 @@
 using System.Runtime.Versioning;
 using System.Text;
 using Microsoft.Win32;
+using Serilog;
 
 namespace Feil.Services;
 
@@ -18,12 +19,14 @@ public static class StartupLaunchService
 
     public static StartupStateResult TryGetState()
     {
+        Log.Debug("Checking startup launch state...");
         try
         {
             if (OperatingSystem.IsWindows())
             {
                 if (!TryGetLaunchExecutablePath(out var executablePath, out _))
                 {
+                    Log.Warning("Could not determine startup executable path on Windows.");
                     return StartupStateResult.Failure("Feil could not determine its startup executable.");
                 }
 
@@ -37,14 +40,17 @@ public static class StartupLaunchService
         }
         catch (Exception ex)
         {
+            Log.Error(ex, "Failed while checking startup launch state.");
             return StartupStateResult.Failure(ex.Message);
         }
 
+        Log.Warning("Launch on startup checked on unsupported OS.");
         return StartupStateResult.Failure("Launch on startup is only supported on Windows and Linux.");
     }
 
     public static StartupRegistrationResult SetEnabled(bool enabled)
     {
+        Log.Information("Setting launch on startup to {Enabled}.", enabled);
         try
         {
             if (OperatingSystem.IsWindows())
@@ -57,6 +63,7 @@ public static class StartupLaunchService
 
                 if (!TryGetLaunchExecutablePath(out var executablePath, out var errorMessage))
                 {
+                    Log.Warning("Cannot set startup: {ErrorMessage}", errorMessage);
                     return StartupRegistrationResult.Failure(errorMessage ?? "Feil could not determine its startup executable.");
                 }
 
@@ -74,6 +81,7 @@ public static class StartupLaunchService
 
                 if (!TryGetLaunchExecutablePath(out var executablePath, out var errorMessage))
                 {
+                    Log.Warning("Cannot set startup: {ErrorMessage}", errorMessage);
                     return StartupRegistrationResult.Failure(errorMessage ?? "Feil could not determine its startup executable.");
                 }
 
@@ -81,10 +89,12 @@ public static class StartupLaunchService
                 return StartupRegistrationResult.Success();
             }
 
+            Log.Warning("Cannot toggle launch on startup on unsupported OS.");
             return StartupRegistrationResult.Failure("Launch on startup is only supported on Windows and Linux.");
         }
         catch (Exception ex)
         {
+            Log.Error(ex, "Failed to change launch on startup state.");
             return StartupRegistrationResult.Failure(ex.Message);
         }
     }

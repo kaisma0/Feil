@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using Serilog;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -146,7 +147,7 @@ class ProtoManifest
         }
         catch (Exception ex) when (ex is IOException or InvalidDataException or ProtoException)
         {
-            Logger.WriteLine("Manifest file '{0}' is corrupt or unreadable ({1}); it will be re-fetched.", filename, ex.Message);
+            Log.Warning("Manifest file {Filename} is corrupt or unreadable ({Error}); it will be re-fetched.", filename, ex.Message);
             checksum = null;
             return null;
         }
