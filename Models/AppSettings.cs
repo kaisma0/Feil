@@ -14,8 +14,9 @@ public sealed class AppSettings
     public bool AutoResumeOnStart  { get; set; } = true;
     public bool SkipDepotSelection { get; set; } = false;
 
-    // ── Steamstub ──
-    public bool AutoApplySteamstub { get; set; } = false;
+    // ── Post-Install Automation ──
+    public bool AutoApplySteamstub { get; set; } = true;
+    public bool AutoGenerateAchievements { get; set; } = true;
 
     // ── Steam Achievements ──
     public uint SteamAccountId     { get; set; }

@@ -100,6 +100,36 @@
                             OnContent="" />
                     </Grid>
 
+                </StackPanel>
+            </Border>
+
+            <!--
+                ══════════════════════════════════════════════════
+                POST-INSTALL SECTION
+                ══════════════════════════════════════════════════
+            -->
+            <Border Classes="feil-card">
+                <StackPanel Spacing="20">
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Border Classes="section-icon">
+                            <PathIcon
+                                Width="16"
+                                Height="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-1.92-4.83-4.65-4.96z" />
+                        </Border>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource FeilTextPrimary}"
+                            Text="Post-Install Automation" />
+                    </StackPanel>
+
+                    <Separator Classes="feil-divider" />
+
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                         <StackPanel Grid.Column="0" Spacing="2">
                             <TextBlock
@@ -110,13 +140,34 @@
                             <TextBlock
                                 FontSize="11"
                                 Foreground="{DynamicResource FeilTextSecondary}"
-                                TextWrapping="Wrap"
-                                Text="After each successful install, scan for Steam DRM protected EXEs and automatically bypass it" />
+                                Text="After each successful install, scan for Steam DRM protected EXEs and automatically bypass it"
+                                TextWrapping="Wrap" />
                         </StackPanel>
                         <ToggleSwitch
                             Grid.Column="1"
                             VerticalAlignment="Center"
                             IsChecked="{Binding AutoApplySteamstub}"
+                            OffContent=""
+                            OnContent="" />
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource FeilTextPrimary}"
+                                Text="Generate Steam Achievements" />
+                            <TextBlock
+                                FontSize="11"
+                                Foreground="{DynamicResource FeilTextSecondary}"
+                                Text="Automatically generate an achievement schema for games after installation"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            IsChecked="{Binding AutoGenerateAchievements}"
                             OffContent=""
                             OnContent="" />
                     </Grid>

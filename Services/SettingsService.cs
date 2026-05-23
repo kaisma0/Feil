@@ -132,6 +132,7 @@ public static class SettingsService
         SkipDepotSelection = settings.SkipDepotSelection,
         SteamAccountId = settings.SteamAccountId,
         AutoApplySteamstub = settings.AutoApplySteamstub,
+        AutoGenerateAchievements = settings.AutoGenerateAchievements,
     };
 
     private static string NormalizeInstallPath(string? installPath) =>

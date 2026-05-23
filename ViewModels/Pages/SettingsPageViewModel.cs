@@ -29,9 +29,12 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty]
     private bool _skipDepotSelection;
 
-    // ── Steamstub ──
+    // ── Post-Install Automation ──
     [ObservableProperty]
     private bool _autoApplySteamstub;
+
+    [ObservableProperty]
+    private bool _autoGenerateAchievements;
 
     // ── Steam ──
     [ObservableProperty]
@@ -70,6 +73,8 @@ public partial class SettingsPageViewModel : ViewModelBase
 
     partial void OnAutoApplySteamstubChanged(bool value) => ClearSaveStatus();
 
+    partial void OnAutoGenerateAchievementsChanged(bool value) => ClearSaveStatus();
+
     partial void OnSteamAccountIdChanged(string value) => ClearSaveStatus();
 
     public void LoadFrom(AppSettings s)
@@ -82,6 +87,7 @@ public partial class SettingsPageViewModel : ViewModelBase
         AutoResumeOnStart   = s.AutoResumeOnStart;
         SkipDepotSelection  = s.SkipDepotSelection;
         AutoApplySteamstub  = s.AutoApplySteamstub;
+        AutoGenerateAchievements = s.AutoGenerateAchievements;
         SteamAccountId      = s.SteamAccountId == 0 ? string.Empty : s.SteamAccountId.ToString();
     }
 
@@ -93,6 +99,7 @@ public partial class SettingsPageViewModel : ViewModelBase
         AutoResumeOnStart   = AutoResumeOnStart,
         SkipDepotSelection  = SkipDepotSelection,
         AutoApplySteamstub  = AutoApplySteamstub,
+        AutoGenerateAchievements = AutoGenerateAchievements,
         SteamAccountId      = uint.TryParse(SteamAccountId, out var id) ? id : 0,
     };
 
@@ -105,7 +112,8 @@ public partial class SettingsPageViewModel : ViewModelBase
         StartMinimised = false;
         AutoResumeOnStart = true;
         SkipDepotSelection = false;
-        AutoApplySteamstub = false;
+        AutoApplySteamstub = true;
+        AutoGenerateAchievements = true;
         SteamAccountId = string.Empty;
         ClearSaveStatus();
     }

@@ -517,35 +517,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
                                     jobToRun.Status = DownloadJobStatus.Completed;
                                     _onJobFinished?.Invoke(CreateHistoryEntry(jobToRun, DownloadJobStatus.Completed));
 
-                                    if (OperatingSystem.IsLinux())
-                                    {
-                                        var sls = new Feil.Services.SLSsteam.SLSsteamService();
-                                        if (sls.IsInstalled())
-                                        {
-                                            sls.ModifyConfig(new[] { "AdditionalApps" }, "add", jobToRun.AppId, jobToRun.GameName);
-                                        }
-                                    }
-
-                                    // Fire-and-forget: generate Steam achievement schema
-                                    _ = StatsSchemaService.TriggerAsync((uint)jobToRun.AppId);
-
-                                    if (_settings?.AutoApplySteamstub == true &&
-                                        !string.IsNullOrWhiteSpace(jobToRun.InstallDirectory))
-                                    {
-                                        _ = Task.Run(async () =>
-                                        {
-                                            try
-                                            {
-                                                await SteamstubService.ApplyAsync(
-                                                    jobToRun.AppId,
-                                                    jobToRun.InstallDirectory!);
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Log.Error(ex, "Auto-apply Steamstub failed for AppId {AppId}", jobToRun.AppId);
-                                            }
-                                        });
-                                    }
+                                    RunPostInstallTasks(jobToRun);
 
                                     if (ActiveJob == jobToRun)
                                     {
@@ -727,6 +699,38 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
 
         Interlocked.Exchange(ref _lastDownloadedBytes, currentBytes);
         Interlocked.Exchange(ref _lastDiskWrittenBytes, currentDisk);
+    }
+
+    private void RunPostInstallTasks(DownloadJobViewModel jobToRun)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                if (OperatingSystem.IsLinux())
+                {
+                    var sls = new Feil.Services.SLSsteam.SLSsteamService();
+                    if (sls.IsInstalled())
+                    {
+                        sls.ModifyConfig(new[] { "AdditionalApps" }, "add", jobToRun.AppId, jobToRun.GameName);
+                    }
+                }
+
+                if (_settings?.AutoGenerateAchievements == true)
+                {
+                    await StatsSchemaService.TriggerAsync((uint)jobToRun.AppId);
+                }
+
+                if (_settings?.AutoApplySteamstub == true && !string.IsNullOrWhiteSpace(jobToRun.InstallDirectory))
+                {
+                    await SteamstubService.ApplyAsync(jobToRun.AppId, jobToRun.InstallDirectory!);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Background post-install tasks failed for AppId {AppId}", jobToRun.AppId);
+            }
+        });
     }
 
     private HistoryEntry CreateHistoryEntry(DownloadJobViewModel job, DownloadJobStatus status) =>
