@@ -1,3 +1,4 @@
+using Serilog;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -47,7 +48,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void NavigateTo(PageType page)
     {
-        Serilog.Log.Information("Navigating to page {Page}", page);
+        Log.Information("Navigating to page {Page}", page);
         CurrentPageKey = page;
         CurrentPage = page switch
         {

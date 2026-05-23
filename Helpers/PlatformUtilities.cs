@@ -1,3 +1,4 @@
+using Serilog;
 #nullable disable
 using System.IO;
 using System.Runtime.InteropServices;
@@ -29,7 +30,7 @@ static class PlatformUtilities
         }
         catch (System.Exception ex)
         {
-            Serilog.Log.Error(ex, "Failed to set executable permission for {Path}", path);
+            Log.Error(ex, "Failed to set executable permission for {Path}", path);
         }
     }
 }

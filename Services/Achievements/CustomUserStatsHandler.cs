@@ -1,3 +1,4 @@
+using Serilog;
 using System;
 using SteamKit2;
 using SteamKit2.Internal;
@@ -14,7 +15,7 @@ public sealed class CustomUserStatsHandler : ClientMsgHandler
         if (packetMsg.MsgType == EMsg.ClientGetUserStatsResponse)
         {
             var msg = new ClientMsgProtobuf<CMsgClientGetUserStatsResponse>(packetMsg);
-            Serilog.Log.Debug("Intercepted ClientGetUserStatsResponse for GameId {GameId}, EResult {Result}", msg.Body.game_id, msg.Body.eresult);
+            Log.Debug("Intercepted ClientGetUserStatsResponse for GameId {GameId}, EResult {Result}", msg.Body.game_id, msg.Body.eresult);
             OnStatsResponse?.Invoke(packetMsg, msg.Body);
         }
     }

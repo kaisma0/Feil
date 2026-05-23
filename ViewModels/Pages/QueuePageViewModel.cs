@@ -542,7 +542,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
                                             }
                                             catch (Exception ex)
                                             {
-                                                Serilog.Log.Error(ex, "Auto-apply Steamstub failed for AppId {AppId}", jobToRun.AppId);
+                                                Log.Error(ex, "Auto-apply Steamstub failed for AppId {AppId}", jobToRun.AppId);
                                             }
                                         });
                                     }

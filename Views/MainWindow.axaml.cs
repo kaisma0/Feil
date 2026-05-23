@@ -1,3 +1,4 @@
+using Serilog;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -29,13 +30,13 @@ public partial class MainWindow : UrsaWindow
 
     public void HideToTray()
     {
-        Serilog.Log.Information("Application window hidden to tray");
+        Log.Information("Application window hidden to tray");
         Hide();
     }
 
     public void ShowFromTray()
     {
-        Serilog.Log.Information("Application window restored from tray");
+        Log.Information("Application window restored from tray");
         Show();
 
         if (WindowState == WindowState.Minimized)
@@ -74,7 +75,7 @@ public partial class MainWindow : UrsaWindow
 
         if (e.ClickCount == 2)
         {
-            Serilog.Log.Information("User double clicked title bar");
+            Log.Information("User double clicked title bar");
             ToggleMaximized();
             return;
         }
@@ -84,19 +85,19 @@ public partial class MainWindow : UrsaWindow
 
     private void OnMinimizeClicked(object? sender, RoutedEventArgs e)
     {
-        Serilog.Log.Information("User requested to minimize window");
+        Log.Information("User requested to minimize window");
         WindowState = WindowState.Minimized;
     }
 
     private void OnMaximizeClicked(object? sender, RoutedEventArgs e)
     {
-        Serilog.Log.Information("User requested to toggle window maximize");
+        Log.Information("User requested to toggle window maximize");
         ToggleMaximized();
     }
 
     private void OnCloseClicked(object? sender, RoutedEventArgs e)
     {
-        Serilog.Log.Information("User requested to close window");
+        Log.Information("User requested to close window");
         HideToTray();
     }
 

@@ -1,3 +1,4 @@
+using Serilog;
 using System;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -26,14 +27,14 @@ public partial class DepotSelectionDialogViewModel : ObservableObject, IDialogCo
     [RelayCommand]
     private void Confirm()
     {
-        Serilog.Log.Information("User confirmed depot selection for game {GameName}", GameName);
+        Log.Information("User confirmed depot selection for game {GameName}", GameName);
         RequestClose?.Invoke(this, true);
     }
 
     [RelayCommand]
     private void Cancel()
     {
-        Serilog.Log.Information("User cancelled depot selection for game {GameName}", GameName);
+        Log.Information("User cancelled depot selection for game {GameName}", GameName);
         RequestClose?.Invoke(this, false);
     }
 

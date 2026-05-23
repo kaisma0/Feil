@@ -56,7 +56,7 @@ public partial class SLSsteamPageViewModel : ViewModelBase
     private void UpdateSls()
     {
         if (!IsSlsInstalled) return;
-        Serilog.Log.Information("User requested to update SLSsteam via terminal script");
+        Log.Information("User requested to update SLSsteam via terminal script");
 
         try
         {
@@ -99,7 +99,7 @@ public partial class SLSsteamPageViewModel : ViewModelBase
     private void Save()
     {
         if (!IsSlsInstalled) return;
-        Serilog.Log.Information("User requested to save SLSsteam settings page");
+        Log.Information("User requested to save SLSsteam settings page");
 
         _slsService.ModifyConfig(new[] { "IdleStatus", "AppId" }, "set", string.IsNullOrWhiteSpace(IdleStatusAppId) ? "0" : IdleStatusAppId);
         _slsService.ModifyConfig(new[] { "IdleStatus", "Title" }, "set", string.IsNullOrWhiteSpace(IdleStatusTitle) ? "\"\"" : $"\"{IdleStatusTitle}\"");

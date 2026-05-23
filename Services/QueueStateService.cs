@@ -1,3 +1,4 @@
+using Serilog;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -29,7 +30,7 @@ public static class QueueStateService
         }
         catch (Exception ex)
         {
-            Serilog.Log.Error(ex, "Failed to load queue state");
+            Log.Error(ex, "Failed to load queue state");
             return null;
         }
     }
@@ -63,7 +64,7 @@ public static class QueueStateService
         }
         catch (Exception ex)
         {
-            Serilog.Log.Warning(ex, "Failed to save queue state");
+            Log.Warning(ex, "Failed to save queue state");
         }
     }
 }

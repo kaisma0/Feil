@@ -1,3 +1,4 @@
+using Serilog;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -32,7 +33,7 @@ public static class HistoryStateService
             }
             catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "Failed to load history state");
+                Log.Error(ex, "Failed to load history state");
                 return null;
             }
         }
@@ -69,7 +70,7 @@ public static class HistoryStateService
             }
             catch (Exception ex)
             {
-                Serilog.Log.Warning(ex, "Failed to save history state");
+                Log.Warning(ex, "Failed to save history state");
                 // Fail silently on save error to avoid crashing the app
             }
         }

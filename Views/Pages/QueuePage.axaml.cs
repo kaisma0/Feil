@@ -1,3 +1,4 @@
+using Serilog;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
@@ -35,7 +36,7 @@ public partial class QueuePage : UserControl
 
     private async void OnAddJobClick(object? sender, RoutedEventArgs e)
     {
-        Serilog.Log.Information("User clicked to add job from file picker");
+        Log.Information("User clicked to add job from file picker");
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel?.StorageProvider is null) return;
 
@@ -80,7 +81,7 @@ public partial class QueuePage : UserControl
 
                 if (zipPaths.Count > 0)
                 {
-                    Serilog.Log.Information("User dragged and dropped {Count} job archives", zipPaths.Count);
+                    Log.Information("User dragged and dropped {Count} job archives", zipPaths.Count);
                     await vm.ProcessZipFilesAsync(zipPaths);
                 }
             }
