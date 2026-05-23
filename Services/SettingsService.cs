@@ -131,6 +131,7 @@ public static class SettingsService
         AutoResumeOnStart = settings.AutoResumeOnStart,
         SkipDepotSelection = settings.SkipDepotSelection,
         SteamAccountId = settings.SteamAccountId,
+        AutoApplySteamstub = settings.AutoApplySteamstub,
     };
 
     private static string NormalizeInstallPath(string? installPath) =>

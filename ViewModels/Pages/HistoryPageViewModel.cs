@@ -6,6 +6,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Feil.Models;
 using Feil.Services.Achievements;
+using Feil.Services.Steamstub;
+using Serilog;
 
 namespace Feil.ViewModels.Pages;
 
@@ -143,6 +145,25 @@ public partial class HistoryPageViewModel : ViewModelBase
             {
                 sls.ModifyConfig(new[] { "FakeAppIds" }, "add", new System.Collections.Generic.KeyValuePair<string, string>(entry.AppId.ToString(), "480"), entry.GameName);
             }
+        }
+    }
+
+    [RelayCommand]
+    private async Task ApplySteamstub(HistoryEntryViewModel? entry)
+    {
+        if (entry is null || !entry.CanApplySteamstub) return;
+
+        Log.Information(
+            "User requested to apply Steamstub for AppId {AppId} at {Dir}",
+            entry.AppId, entry.Entry.InstallDirectory);
+
+        try
+        {
+            await SteamstubService.ApplyAsync(entry.AppId, entry.Entry.InstallDirectory!);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "ApplySteamstub failed for AppId {AppId}", entry.AppId);
         }
     }
 

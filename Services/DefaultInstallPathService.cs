@@ -11,7 +11,9 @@ public static class DefaultInstallPathService
         if (steamRoot != null)
             return Path.Combine(steamRoot, "steamapps", "common");
 
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Games", "Feil");
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "Games", "Feil");
     }
 
     // Steam appcache/stats directory for achievement schemas.
@@ -24,43 +26,80 @@ public static class DefaultInstallPathService
     // Resolves the Steam installation root directory.
     public static string? GetSteamRootPath()
     {
-        foreach (var candidate in EnumerateSteamRootPaths())
+        foreach (var candidate in EnumerateSteamRootCandidates())
         {
             if (Directory.Exists(candidate))
-                return candidate;
+                return TryResolveLinkTarget(candidate) ?? candidate;
         }
 
         return null;
     }
 
-    private static IEnumerable<string> EnumerateSteamRootPaths()
+    public static IEnumerable<string> EnumerateSteamRootCandidates()
     {
         if (OperatingSystem.IsLinux())
         {
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             var xdgDataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
 
-            if (!string.IsNullOrWhiteSpace(xdgDataHome))
-            {
-                yield return Path.Combine(xdgDataHome, "Steam");
-            }
-            else
-            {
-                yield return Path.Combine(home, ".local", "share", "Steam");
-            }
+            yield return !string.IsNullOrWhiteSpace(xdgDataHome)
+                ? Path.Combine(xdgDataHome, "Steam")
+                : Path.Combine(home, ".local", "share", "Steam");
 
             yield return Path.Combine(home, ".steam", "steam");
             yield return Path.Combine(home, ".var", "app", "com.valvesoftware.Steam", ".local", "share", "Steam");
         }
         else if (OperatingSystem.IsWindows())
         {
-            var programFiles86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-            if (!string.IsNullOrWhiteSpace(programFiles86))
-                yield return Path.Combine(programFiles86, "Steam");
+            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            if (!string.IsNullOrWhiteSpace(programFilesX86))
+                yield return Path.Combine(programFilesX86, "Steam");
 
             var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
             if (!string.IsNullOrWhiteSpace(programFiles))
                 yield return Path.Combine(programFiles, "Steam");
         }
+    }
+
+    // Resolves paths to all localconfig.vdf files across all discovered Steam roots.
+    public static IEnumerable<string> EnumerateLocalConfigPaths()
+    {
+        var seenRoots = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var steamRoot in EnumerateSteamRootCandidates())
+        {
+            if (!Directory.Exists(steamRoot))
+                continue;
+
+            // Resolve symlinks (e.g. ~/.steam/steam -> ~/.local/share/Steam) to avoid duplicates.
+            var resolvedRoot = TryResolveLinkTarget(steamRoot) ?? steamRoot;
+            if (!seenRoots.Add(resolvedRoot))
+                continue;
+
+            var userdataDir = Path.Combine(resolvedRoot, "userdata");
+            if (!Directory.Exists(userdataDir))
+                continue;
+
+            foreach (var userDir in Directory.EnumerateDirectories(userdataDir))
+            {
+                var path = Path.Combine(userDir, "config", "localconfig.vdf");
+                if (File.Exists(path))
+                    yield return path;
+            }
+        }
+    }
+
+    private static string? TryResolveLinkTarget(string path)
+    {
+        try
+        {
+            var dir = new DirectoryInfo(path);
+            if (dir.LinkTarget != null)
+                return dir.ResolveLinkTarget(returnFinalTarget: true)?.FullName;
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+
+        return null;
     }
 }

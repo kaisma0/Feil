@@ -36,6 +36,7 @@ public partial class HistoryEntryViewModel : ObservableObject
     public bool IsCancelled => FinalStatus == DownloadJobStatus.Cancelled;
     public bool CanRetry    => (IsFailed || IsCancelled) && !string.IsNullOrWhiteSpace(Entry.JobDirectory);
     public bool CanVerify   => IsSuccess && (!string.IsNullOrWhiteSpace(Entry.JobDirectory) || Entry.Job is not null) && !string.IsNullOrWhiteSpace(Entry.InstallDirectory);
+    public bool CanApplySteamstub => IsSuccess && !string.IsNullOrWhiteSpace(Entry.InstallDirectory);
     public bool HasGameIcon => GameIcon is not null;
 
     partial void OnGameIconChanged(IImage? value) => OnPropertyChanged(nameof(HasGameIcon));

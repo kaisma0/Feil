@@ -257,6 +257,18 @@
                                                             </MenuItem.Icon>
                                                         </MenuItem>
                                                         <MenuItem
+                                                            Command="{Binding $parent[UserControl].((vm:HistoryPageViewModel)DataContext).ApplySteamstubCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Header="Apply Steamstub"
+                                                            IsVisible="{Binding CanApplySteamstub}">
+                                                            <MenuItem.Icon>
+                                                                <PathIcon
+                                                                    Width="14"
+                                                                    Height="14"
+                                                                    Data="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93C9.33 17.79 7 14.5 7 11V7.18L12 5z" />
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
+                                                        <MenuItem
                                                             Command="{Binding $parent[UserControl].((vm:HistoryPageViewModel)DataContext).GenerateAchievementsCommand}"
                                                             CommandParameter="{Binding}"
                                                             Header="Generate Achievements"

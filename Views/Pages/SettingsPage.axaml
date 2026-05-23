@@ -100,6 +100,27 @@
                             OnContent="" />
                     </Grid>
 
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource FeilTextPrimary}"
+                                Text="Auto-apply Steamstub" />
+                            <TextBlock
+                                FontSize="11"
+                                Foreground="{DynamicResource FeilTextSecondary}"
+                                TextWrapping="Wrap"
+                                Text="After each successful install, scan for Steam DRM protected EXEs and automatically bypass it" />
+                        </StackPanel>
+                        <ToggleSwitch
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            IsChecked="{Binding AutoApplySteamstub}"
+                            OffContent=""
+                            OnContent="" />
+                    </Grid>
+
                 </StackPanel>
             </Border>
 

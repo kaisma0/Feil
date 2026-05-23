@@ -29,6 +29,10 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty]
     private bool _skipDepotSelection;
 
+    // ── Steamstub ──
+    [ObservableProperty]
+    private bool _autoApplySteamstub;
+
     // ── Steam ──
     [ObservableProperty]
     private string _steamAccountId = string.Empty;
@@ -64,6 +68,8 @@ public partial class SettingsPageViewModel : ViewModelBase
 
     partial void OnSkipDepotSelectionChanged(bool value) => ClearSaveStatus();
 
+    partial void OnAutoApplySteamstubChanged(bool value) => ClearSaveStatus();
+
     partial void OnSteamAccountIdChanged(string value) => ClearSaveStatus();
 
     public void LoadFrom(AppSettings s)
@@ -75,6 +81,7 @@ public partial class SettingsPageViewModel : ViewModelBase
         StartMinimised      = s.StartMinimised;
         AutoResumeOnStart   = s.AutoResumeOnStart;
         SkipDepotSelection  = s.SkipDepotSelection;
+        AutoApplySteamstub  = s.AutoApplySteamstub;
         SteamAccountId      = s.SteamAccountId == 0 ? string.Empty : s.SteamAccountId.ToString();
     }
 
@@ -85,6 +92,7 @@ public partial class SettingsPageViewModel : ViewModelBase
         StartMinimised      = StartMinimised,
         AutoResumeOnStart   = AutoResumeOnStart,
         SkipDepotSelection  = SkipDepotSelection,
+        AutoApplySteamstub  = AutoApplySteamstub,
         SteamAccountId      = uint.TryParse(SteamAccountId, out var id) ? id : 0,
     };
 
@@ -97,6 +105,7 @@ public partial class SettingsPageViewModel : ViewModelBase
         StartMinimised = false;
         AutoResumeOnStart = true;
         SkipDepotSelection = false;
+        AutoApplySteamstub = false;
         SteamAccountId = string.Empty;
         ClearSaveStatus();
     }

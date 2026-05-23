@@ -14,6 +14,7 @@ using Feil.Models;
 using Feil.Services;
 using Feil.Services.Achievements;
 using Feil.Services.JobParser;
+using Feil.Services.Steamstub;
 
 namespace Feil.ViewModels.Pages;
 
@@ -527,6 +528,24 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
 
                                     // Fire-and-forget: generate Steam achievement schema
                                     _ = StatsSchemaService.TriggerAsync((uint)jobToRun.AppId);
+
+                                    if (_settings?.AutoApplySteamstub == true &&
+                                        !string.IsNullOrWhiteSpace(jobToRun.InstallDirectory))
+                                    {
+                                        _ = Task.Run(async () =>
+                                        {
+                                            try
+                                            {
+                                                await SteamstubService.ApplyAsync(
+                                                    jobToRun.AppId,
+                                                    jobToRun.InstallDirectory!);
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                Serilog.Log.Error(ex, "Auto-apply Steamstub failed for AppId {AppId}", jobToRun.AppId);
+                                            }
+                                        });
+                                    }
 
                                     if (ActiveJob == jobToRun)
                                     {
