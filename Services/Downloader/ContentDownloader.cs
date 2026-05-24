@@ -1011,107 +1011,105 @@ static class ContentDownloader
         else
         {
             // open existing
-            if (oldManifestFile != null)
+            // If no old manifest for this file, use the current manifest as a baseline
+            // and force verification since we don't know the file's state on disk.
+            var forceVerify = (oldManifestFile == null);
+            if (forceVerify)
             {
-                neededChunks = [];
+                oldManifestFile = file;
 
-                var hashMatches = oldManifestFile.FileHash.SequenceEqual(file.FileHash);
-                if (Config.VerifyAll || !hashMatches)
-                {
-                    // we have a version of this file, but it doesn't fully match what we want
-                    if (Config.VerifyAll)
-                    {
-                        Log.Information("Validating {Arg0}", fileFinalPath);
-                    }
-
-                    var matchingChunks = new List<ChunkMatch>();
-
-                    foreach (var chunk in file.Chunks)
-                    {
-                        var oldChunk = oldManifestFile.Chunks.FirstOrDefault(c => c.ChunkID.SequenceEqual(chunk.ChunkID));
-                        if (oldChunk != null)
-                        {
-                            matchingChunks.Add(new ChunkMatch(oldChunk, chunk));
-                        }
-                        else
-                        {
-                            neededChunks.Add(chunk);
-                        }
-                    }
-
-                    var orderedChunks = matchingChunks.OrderBy(x => x.OldChunk.Offset);
-
-                    var copyChunks = new List<ChunkMatch>();
-
-                    using (var fsOld = File.Open(fileFinalPath, FileMode.Open))
-                    {
-                        foreach (var match in orderedChunks)
-                        {
-                            fsOld.Seek((long)match.OldChunk.Offset, SeekOrigin.Begin);
-
-                            var adler = Util.AdlerHash(fsOld, (int)match.OldChunk.UncompressedLength);
-                            if (!adler.SequenceEqual(BitConverter.GetBytes(match.OldChunk.Checksum)))
-                            {
-                                neededChunks.Add(match.NewChunk);
-                            }
-                            else
-                            {
-                                copyChunks.Add(match);
-                            }
-                        }
-                    }
-
-                    if (!hashMatches)
-                    {
-                        File.Move(fileFinalPath, fileStagingPath);
-
-                        using (var fsOld = File.Open(fileStagingPath, FileMode.Open))
-                        {
-                            using var fs = File.Open(fileFinalPath, FileMode.Create);
-                            try
-                            {
-                                fs.SetLength((long)file.TotalSize);
-                            }
-                            catch (IOException ex)
-                            {
-                                throw new ContentDownloaderException(string.Format("Failed to resize file to expected size {0}: {1}", fileFinalPath, ex.Message));
-                            }
-
-                            foreach (var match in copyChunks)
-                            {
-                                fsOld.Seek((long)match.OldChunk.Offset, SeekOrigin.Begin);
-
-                                var tmp = new byte[match.OldChunk.UncompressedLength];
-                                fsOld.ReadExactly(tmp);
-
-                                fs.Seek((long)match.NewChunk.Offset, SeekOrigin.Begin);
-                                fs.Write(tmp, 0, tmp.Length);
-                            }
-                        }
-
-                        File.Delete(fileStagingPath);
-                    }
-                }
-            }
-            else
-            {
-                // No old manifest or file not in old manifest. We must validate.
-
-                using var fs = File.Open(fileFinalPath, FileMode.Open);
+                // Correct file size if it doesn't match the manifest
                 if ((ulong)fi.Length != file.TotalSize)
                 {
+                    using var fsResize = File.Open(fileFinalPath, FileMode.Open, FileAccess.Write);
                     try
                     {
-                        fs.SetLength((long)file.TotalSize);
+                        fsResize.SetLength((long)file.TotalSize);
                     }
                     catch (IOException ex)
                     {
                         throw new ContentDownloaderException(string.Format("Failed to allocate file {0}: {1}", fileFinalPath, ex.Message));
                     }
                 }
+            }
 
-                Log.Information("Validating {Arg0}", fileFinalPath);
-                neededChunks = Util.ValidateSteam3FileChecksums(fs, [.. file.Chunks.OrderBy(x => x.Offset)]);
+            neededChunks = [];
+
+            var hashMatches = oldManifestFile.FileHash.SequenceEqual(file.FileHash);
+            if (Config.VerifyAll || forceVerify || !hashMatches)
+            {
+                if (Config.VerifyAll || forceVerify)
+                {
+                    Log.Information("Validating {Arg0}", fileFinalPath);
+                }
+
+                var matchingChunks = new List<ChunkMatch>();
+
+                foreach (var chunk in file.Chunks)
+                {
+                    var oldChunk = oldManifestFile.Chunks.FirstOrDefault(c => c.ChunkID.SequenceEqual(chunk.ChunkID));
+                    if (oldChunk != null)
+                    {
+                        matchingChunks.Add(new ChunkMatch(oldChunk, chunk));
+                    }
+                    else
+                    {
+                        neededChunks.Add(chunk);
+                    }
+                }
+
+                var orderedChunks = matchingChunks.OrderBy(x => x.OldChunk.Offset);
+
+                var copyChunks = new List<ChunkMatch>();
+
+                using (var fsOld = File.Open(fileFinalPath, FileMode.Open))
+                {
+                    foreach (var match in orderedChunks)
+                    {
+                        fsOld.Seek((long)match.OldChunk.Offset, SeekOrigin.Begin);
+
+                        var adler = Util.AdlerHash(fsOld, (int)match.OldChunk.UncompressedLength);
+                        if (!adler.SequenceEqual(BitConverter.GetBytes(match.OldChunk.Checksum)))
+                        {
+                            neededChunks.Add(match.NewChunk);
+                        }
+                        else
+                        {
+                            copyChunks.Add(match);
+                        }
+                    }
+                }
+
+                if (!hashMatches)
+                {
+                    File.Move(fileFinalPath, fileStagingPath);
+
+                    using (var fsOld = File.Open(fileStagingPath, FileMode.Open))
+                    {
+                        using var fs = File.Open(fileFinalPath, FileMode.Create);
+                        try
+                        {
+                            fs.SetLength((long)file.TotalSize);
+                        }
+                        catch (IOException ex)
+                        {
+                            throw new ContentDownloaderException(string.Format("Failed to resize file to expected size {0}: {1}", fileFinalPath, ex.Message));
+                        }
+
+                        foreach (var match in copyChunks)
+                        {
+                            fsOld.Seek((long)match.OldChunk.Offset, SeekOrigin.Begin);
+
+                            var tmp = new byte[match.OldChunk.UncompressedLength];
+                            fsOld.ReadExactly(tmp);
+
+                            fs.Seek((long)match.NewChunk.Offset, SeekOrigin.Begin);
+                            fs.Write(tmp, 0, tmp.Length);
+                        }
+                    }
+
+                    File.Delete(fileStagingPath);
+                }
             }
 
             if (neededChunks.Count == 0)
