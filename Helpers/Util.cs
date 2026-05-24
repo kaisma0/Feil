@@ -36,12 +36,21 @@ static class Util
     public static byte[] AdlerHash(Stream stream, int length)
     {
         uint a = 0, b = 0;
-        for (var i = 0; i < length; i++)
-        {
-            var c = (uint)stream.ReadByte();
+        var buffer = new byte[Math.Min(length, 81920)];
+        var remaining = length;
 
-            a = (a + c) % 65521;
-            b = (b + a) % 65521;
+        while (remaining > 0)
+        {
+            var bytesRead = stream.Read(buffer, 0, Math.Min(remaining, buffer.Length));
+            if (bytesRead == 0) break;
+
+            for (var i = 0; i < bytesRead; i++)
+            {
+                a = (a + buffer[i]) % 65521;
+                b = (b + a) % 65521;
+            }
+
+            remaining -= bytesRead;
         }
 
         return BitConverter.GetBytes(a | (b << 16));
