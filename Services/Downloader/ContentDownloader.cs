@@ -1099,12 +1099,17 @@ static class ContentDownloader
                         foreach (var match in copyChunks)
                         {
                             fsOld.Seek((long)match.OldChunk.Offset, SeekOrigin.Begin);
-
-                            var tmp = new byte[match.OldChunk.UncompressedLength];
-                            fsOld.ReadExactly(tmp);
-
                             fs.Seek((long)match.NewChunk.Offset, SeekOrigin.Begin);
-                            fs.Write(tmp, 0, tmp.Length);
+
+                            var remaining = (long)match.OldChunk.UncompressedLength;
+                            var buffer = new byte[81920];
+                            while (remaining > 0)
+                            {
+                                var toRead = (int)Math.Min(remaining, buffer.Length);
+                                fsOld.ReadExactly(buffer, 0, toRead);
+                                fs.Write(buffer, 0, toRead);
+                                remaining -= toRead;
+                            }
                         }
                     }
 
