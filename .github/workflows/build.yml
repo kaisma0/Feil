@@ -1,10 +1,95 @@
-name: Build AppImage
+name: Build and Release
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Extract version from csproj
+      id: version
+      run: |
+        VERSION=$(grep -oP '(?<=<Version>)[^<]+' Feil.csproj)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Publish application
+      run: |
+        dotnet publish Feil.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o publish_output
+
+    - name: Download and setup Velopack CLI (vpk)
+      run: |
+        dotnet tool install -g vpk
+
+    - name: Build AppImage with Velopack
+      run: |
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        vpk pack -u Feil -v ${{ steps.version.outputs.version }} -p publish_output -e Feil --icon Assets/icon.svg -o velopack_release
+
+    - name: Upload Linux Velopack artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: feil-linux
+        path: velopack_release/**
+
+  build-windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Extract version from csproj
+      id: version
+      shell: bash
+      run: |
+        VERSION=$(grep -oP '(?<=<Version>)[^<]+' Feil.csproj)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Publish application
+      run: |
+        dotnet publish Feil.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish_output
+
+    - name: Download and setup Velopack CLI (vpk)
+      run: |
+        dotnet tool install -g vpk
+
+    - name: Build Windows installer with Velopack
+      shell: bash
+      run: |
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        vpk pack -u Feil -v ${{ steps.version.outputs.version }} -p publish_output -e Feil.exe -o velopack_release
+
+    - name: Upload Windows Velopack artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: feil-windows
+        path: velopack_release/**
+
+  release:
+    needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -51,77 +136,25 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v5
+    - name: Download Linux artifacts
+      uses: actions/download-artifact@v4
       with:
-        dotnet-version: '10.0.x'
+        name: feil-linux
+        path: linux-release
 
-    - name: Publish application
-      run: |
-        dotnet publish Feil.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o publish_output
-
-    - name: Download and setup Velopack CLI (vpk)
-      run: |
-        dotnet tool install -g vpk
-
-    - name: Build AppImage with Velopack
-      run: |
-        export PATH="$PATH:$HOME/.dotnet/tools"
-        vpk pack -u Feil -v ${{ steps.version.outputs.version }} -p publish_output -e Feil --icon Assets/icon.svg -o velopack_release
+    - name: Download Windows artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: feil-windows
+        path: windows-release
 
     - name: Create GitHub Release
       run: |
-        gh release create v${{ steps.version.outputs.version }} \
-          velopack_release/Feil.AppImage \
-          velopack_release/releases.linux.json \
-          velopack_release/Feil-*-linux-full.nupkg \
+        gh release create "v${{ steps.version.outputs.version }}" \
+          linux-release/* \
+          windows-release/* \
           --title "Feil v${{ steps.version.outputs.version }}" \
           --notes-file release-notes.md \
           --latest
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-windows:
-    runs-on: windows-latest
-    permissions:
-      contents: write
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
-
-    - name: Extract version from csproj
-      id: version
-      shell: bash
-      run: |
-        VERSION=$(grep -oP '(?<=<Version>)[^<]+' Feil.csproj)
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: '10.0.x'
-
-    - name: Publish application
-      run: |
-        dotnet publish Feil.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish_output
-
-    - name: Download and setup Velopack CLI (vpk)
-      run: |
-        dotnet tool install -g vpk
-
-    - name: Build Windows installer with Velopack
-      shell: bash
-      run: |
-        export PATH="$PATH:$HOME/.dotnet/tools"
-        vpk pack -u Feil -v ${{ steps.version.outputs.version }} -p publish_output -e Feil -o velopack_release
-
-    - name: Upload Windows artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: feil-windows
-        path: |
-          publish_output/**
-          velopack_release/**
