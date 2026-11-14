@@ -26,6 +26,7 @@ public partial class SLSsteamPageViewModel : ViewModelBase
     private string _fakeWalletBalance = "";
 
     public bool IsLinux => OperatingSystem.IsLinux();
+    public bool IsSlsAvailable => Feil.Services.PlatformService.SupportsSLSsteam;
     public bool IsSlsInstalled => IsLinux && _slsService.IsInstalled();
 
     public SLSsteamPageViewModel()

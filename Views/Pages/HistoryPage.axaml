@@ -213,7 +213,7 @@
                                                             Command="{Binding $parent[UserControl].((vm:HistoryPageViewModel)DataContext).AddOnlineCommand}"
                                                             CommandParameter="{Binding}"
                                                             Header="Add Online"
-                                                            IsVisible="{Binding IsSuccess}">
+                                                            IsVisible="{Binding CanAddOnline}">
                                                             <MenuItem.Icon>
                                                                 <PathIcon
                                                                     Width="14"

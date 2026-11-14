@@ -80,3 +80,48 @@ jobs:
           --latest
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Extract version from csproj
+      id: version
+      shell: bash
+      run: |
+        VERSION=$(grep -oP '(?<=<Version>)[^<]+' Feil.csproj)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Publish application
+      run: |
+        dotnet publish Feil.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish_output
+
+    - name: Download and setup Velopack CLI (vpk)
+      run: |
+        dotnet tool install -g vpk
+
+    - name: Build Windows installer with Velopack
+      shell: bash
+      run: |
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        vpk pack -u Feil -v ${{ steps.version.outputs.version }} -p publish_output -e Feil -o velopack_release
+
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: feil-windows
+        path: |
+          publish_output/**
+          velopack_release/**

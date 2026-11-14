@@ -63,9 +63,11 @@ public static class SteamstubService
             DeleteDirectoryBestEffort(tempDir);
         }
 
-        KillSteamProcesses();
-
-        SteamLaunchOptionsService.SetWinmmOverride(appId);
+        if (Feil.Services.PlatformService.UsesWineLaunchOptions)
+        {
+            KillSteamProcesses();
+            SteamLaunchOptionsService.SetWinmmOverride(appId);
+        }
 
         return true;
     }

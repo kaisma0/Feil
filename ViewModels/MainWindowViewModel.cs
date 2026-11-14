@@ -14,6 +14,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 {
     public string AppVersionLabel { get; }
 
+    public bool IsSlsAvailable => Feil.Services.PlatformService.SupportsSLSsteam;
+
     // ── Page ViewModels ──
     public HistoryPageViewModel HistoryPage { get; }
     public SettingsPageViewModel SettingsPage { get; }
@@ -54,7 +56,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         {
             PageType.Queue => QueuePage,
             PageType.History => HistoryPage,
-            PageType.SLSsteam => SLSsteamPage,
+            PageType.SLSsteam => IsSlsAvailable ? SLSsteamPage : QueuePage,
             PageType.Settings => SettingsPage,
             _ => QueuePage,
         };

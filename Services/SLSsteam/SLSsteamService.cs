@@ -23,7 +23,7 @@ public class SLSsteamService
     }
 
     public bool IsInstalled() =>
-        OperatingSystem.IsLinux() && File.Exists(_configFilePath);
+        Feil.Services.PlatformService.SupportsSLSsteam && File.Exists(_configFilePath);
 
     public string? GetConfigValue(string[] path)
     {

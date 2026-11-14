@@ -1,4 +1,5 @@
 using System.IO;
+using Microsoft.Win32;
 
 namespace Feil.Services;
 
@@ -51,6 +52,10 @@ public static class DefaultInstallPathService
         }
         else if (OperatingSystem.IsWindows())
         {
+            var registryRoot = TryGetWindowsSteamRootFromRegistry();
+            if (!string.IsNullOrWhiteSpace(registryRoot))
+                yield return registryRoot;
+
             var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
             if (!string.IsNullOrWhiteSpace(programFilesX86))
                 yield return Path.Combine(programFilesX86, "Steam");
@@ -87,6 +92,35 @@ public static class DefaultInstallPathService
                     yield return path;
             }
         }
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    private static string? TryGetWindowsSteamRootFromRegistry()
+    {
+        try
+        {
+            using var currentUserKey = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
+            var currentUserPath = currentUserKey?.GetValue("SteamPath") as string;
+            if (!string.IsNullOrWhiteSpace(currentUserPath) && Directory.Exists(currentUserPath))
+                return currentUserPath;
+
+            foreach (var hive in new[] { Registry.LocalMachine })
+            {
+                foreach (var subKeyPath in new[] { @"SOFTWARE\Valve\Steam", @"SOFTWARE\WOW6432Node\Valve\Steam" })
+                {
+                    using var key = hive.OpenSubKey(subKeyPath);
+                    var installPath = key?.GetValue("InstallPath") as string;
+                    if (!string.IsNullOrWhiteSpace(installPath) && Directory.Exists(installPath))
+                        return installPath;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Debug(ex, "Could not read Steam install path from Windows registry");
+        }
+
+        return null;
     }
 
     private static string? TryResolveLinkTarget(string path)

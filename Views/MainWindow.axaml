@@ -269,7 +269,7 @@
                         x:Name="NavSLSsteam"
                         Classes="sidebar-nav-item"
                         Click="OnNavItemClicked"
-                        IsVisible="{Binding SLSsteamPage.IsLinux}"
+                        IsVisible="{Binding IsSlsAvailable}"
                         Tag="slssteam">
                         <Grid ColumnDefinitions="40,Auto">
                             <PathIcon

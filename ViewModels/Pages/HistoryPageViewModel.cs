@@ -19,6 +19,8 @@ public partial class HistoryPageViewModel : ViewModelBase
     public Action<HistoryEntry>? VerifyRequested { get; set; }
     public Action<HistoryEntry>? RetryRequested { get; set; }
 
+    public bool IsSlsAvailable => Feil.Services.PlatformService.SupportsSLSsteam;
+
     public ObservableCollection<HistoryEntryViewModel> Entries { get; } = [];
 
     [ObservableProperty]
@@ -120,7 +122,7 @@ public partial class HistoryPageViewModel : ViewModelBase
         if (entry is null) return;
         Log.Information("User requested to remove history entry for AppId {AppId}", entry.AppId);
 
-        if (OperatingSystem.IsLinux() && entry.IsSuccess)
+        if (Feil.Services.PlatformService.SupportsSLSsteam && entry.IsSuccess)
         {
             var sls = new Feil.Services.SLSsteam.SLSsteamService();
             if (sls.IsInstalled())
@@ -138,7 +140,7 @@ public partial class HistoryPageViewModel : ViewModelBase
         if (entry is null || !entry.IsSuccess) return;
         Log.Information("User requested to add online fix to SLSsteam config for AppId {AppId}", entry.AppId);
 
-        if (OperatingSystem.IsLinux())
+        if (Feil.Services.PlatformService.SupportsSLSsteam)
         {
             var sls = new Feil.Services.SLSsteam.SLSsteamService();
             if (sls.IsInstalled())

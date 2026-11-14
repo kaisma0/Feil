@@ -707,7 +707,7 @@ public partial class QueuePageViewModel : ViewModelBase, IDisposable
         {
             try
             {
-                if (OperatingSystem.IsLinux())
+                if (Feil.Services.PlatformService.SupportsSLSsteam)
                 {
                     var sls = new Feil.Services.SLSsteam.SLSsteamService();
                     if (sls.IsInstalled())
